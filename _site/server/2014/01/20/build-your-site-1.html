@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>服务器建站笔记-初期设定</title>
+        <meta name="viewport" content="width=device-width">
+
+        <!-- syntax highlighting CSS -->
+        <link rel="stylesheet" href="/css/syntax.css">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="/css/main.css">
+
+    </head>
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">fdwills</a></h1>
+            <a class="extra" href="/">home</a>
+          </div>
+
+          <h2>服务器建站笔记-初期设定</h2>
+<p class="meta">20 Jan 2014</p>
+
+<div class="post">
+<p>从日本域名服务商onamae上注册了fdwills的域名，开始准备建站。
+用onamae提供的公共服务器服务可以一键建立wordpress服务，绑定DNS之后就能很好的运作。
+现在开始尝试在VPS（KVM）模式，即从一无所有的虚拟主机开始建立网络应用。</p>
+
+<p>系统情况：CentOs6.2 64bit， 开启ssh服务</p>
+
+<h2>1. 新建用户root之外的工作用用户</h2>
+
+<div class="highlight"><pre><code class="bash"><span class="c">#新建用户</span>
+root<span class="nv">$ </span>adduser wills
+root<span class="nv">$ </span>passwd wills
+
+<span class="c">#安装Git,vim</span>
+root<span class="nv">$ </span>yum install git
+root<span class="nv">$ </span>yum install vim
+
+<span class="c">#安装各种编译所需要的组件</span>
+root<span class="nv">$ </span>yum install gcc gcc-c++ gdb openssl-devel crul libcurl-devel expat-devel perl-ExtUtils-MakeMaker build-essential tcl8.4 tk8.4 gettext wget
+</code></pre></div>
+
+<p>编辑/etc/sudoer文件，添加下列, 赋予wills sudo权限，方便之后的设置</p>
+
+<div class="highlight"><pre><code class="text">wills All=(All) All
+</code></pre></div>
+
+<h2>2. 使用工作用户登录，配置用户环境</h2>
+
+<div class="highlight"><pre><code class="bash">root<span class="nv">$ </span>su wills
+<span class="nv">$cd</span> /home/wills
+
+<span class="c">#从Github下载个人环境配置并安装</span>
+<span class="nv">$git</span> clone https://github.vom/fdwills/wills
+<span class="nv">$cd</span> wills<span class="p">;</span>./install.sh
+</code></pre></div>
+
+<h2>3. 更新git版本</h2>
+
+<div class="highlight"><pre><code class="bash"><span class="nv">$git</span> clone https://github.com/git/git
+<span class="nv">$cd</span> git<span class="p">;</span> make<span class="p">;</span> sudo make install
+<span class="c">#安装路径问题</span>
+<span class="nv">$sudo</span> mv /root/bin/git* /user/bin/
+<span class="c"># 检查git版本</span>
+<span class="nv">$git</span> -v
+</code></pre></div>
+
+</div>
+
+<br>
+<h1><a href=https://github.com/fdwills/fdwills.github.io/issues/new>[click to comment]</a></h1>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                wills<br />
+                Engineer<br />
+                weirenzhong@gmail.com
+              </p>
+            </div>
+            <div class="contact">
+              <p>
+                <a href="https://github.com/fdwills">fdwills@github</a><br />
+              </p>
+            </div>
+          </div>
+        </div>
+
+    </body>
+</html>
