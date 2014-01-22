@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-        <title>服务器建站笔记-应用安装</title>
+        <title>服务器建站笔记-组件安装</title>
         <meta name="viewport" content="width=device-width">
 
         <!-- syntax highlighting CSS -->
@@ -21,171 +21,56 @@
             <a class="extra" href="/">home</a>
           </div>
 
-          <h2>服务器建站笔记-应用安装</h2>
+          <h2>服务器建站笔记-组件安装</h2>
 <p class="meta">21 Jan 2014</p>
 
 <div class="post">
-<p>mysql+ruby+rails环境搭建
-apache的各种一般模块中MPM采用基本配置prefork模式，prefork各参数对于访问量低的应用不配置也可。
-rails routes的原因，apache对于rewrite模块的需求不是很大，rewrite规则不写也可。</p>
+<p>想建立的网站架构是apache+mysql+ruby rails架构
+可能的话建立自动任务（暂定jenkins）
+建立自动deploy,migration体系（暂定capitrano, 没搞过，可能需要点时间）</p>
 
-<h2>1. mysql安装</h2>
+<h2>1. apache安装</h2>
 
-<div class="highlight"><pre><code class="bash"><span class="c"># 安装mysql，mysql-devel。后者是在安装sqlite的依赖</span>
-sudo yum install mysql mysql-devel
- 
-<span class="c"># 设置mysql开机自启动级别</span>
-sudo chkconfig --add mysqld
-sudo chkconfig --level 35 mysqld on
- 
-<span class="c"># 启动mysql</span>
-sudo service mysqld start
- 
-<span class="c"># 连接数据库是否正常： root密码&lt;空&gt;</span>
-mysql -uroot
- 
-<span class="c"># mysql用户以及权限，可以按照自己需求添加，例：</span>
-<span class="c"># GRANT ALL PRIVILEGES ON *.* to &#39;rails&#39;@&#39;localhost&#39; IDENTIFIED BY &#39;password&#39;</span>
+<div class="highlight"><pre><code class="bash"><span class="c"># 安装httpd服务</span>
+yum install httpd
+chkconfig --add httpd
+chkconfig -level 35 httpd on
 </code></pre></div>
 
-<h2>2. Ruby安装</h2>
+<p>修改/etc/httpd/conf/httpd.conf
+include “自己的ConfPath”
+写入以下内容至个人的httpd.conf</p>
 
-<p>ruby on rails的开发语言。</p>
-
-<div class="highlight"><pre><code class="bash"><span class="c"># 安装ruby相关组件gem安装器</span>
-sudo yum install readline readline-devel ruby rubygems
- 
-<span class="c"># CentOs的Repo里面无ruby-devel，需指定安装</span>
-sudo yum --enablerepo<span class="o">=</span>remi,remi-test -y install ruby-devel
- 
-<span class="c"># 查看ruby版本，过低版本的ruby需要升级，建议2.0.0-p247以后</span>
-ruby -v
- 
-<span class="c"># 更新Gem</span>
-gem update system
-</code></pre></div>
-
-<p>现在安装的Ruby版本过低，无法安装rails，rails需ruby1.9.x以上版本支持，所以要进行ruby的版本管理
-这里安装rbenv进行ruby版本管理</p>
-
-<div class="highlight"><pre><code class="bash"><span class="c"># 安装rbenv</span>
-<span class="nb">cd</span> ~
-git clone https://github.com/sstephenson/rbenv.git ~/.rbenv
- 
-<span class="c"># 设置环境变量</span>
-<span class="nb">echo</span> <span class="s1">&#39;export PATH=&quot;$HOME/.rbenv/bin:$PATH&quot;&#39;</span> &gt;&gt; ~/.bash_profile
-<span class="nb">echo</span> <span class="s1">&#39;eval &quot;$(rbenv init -)&quot;&#39;</span> &gt;&gt; ~/.bash_profile
-<span class="nb">exec</span> <span class="nv">$SHELL</span> -l
- 
-<span class="c"># 安装ruby builder</span>
-git clone https://github.com/sstephenson/ruby-build.git ~/.rbenv/plugins/ruby-build
-git clone https://github.com/sstephenson/rbenv-gem-rehash.git ~/.rbenv/plugins/rbenv-gem-rehash
-</code></pre></div>
-
-<p>centos 下2.0.0-p247安装会出现库文件路径问题，p353已修复，建议安装2.0.0-p353版本.<a href="https://github.com/smalruby/smalruby/issues/4">链接</a></p>
-
-<div class="highlight"><pre><code class="bash"><span class="c"># 通过rbenv安装ruby新版本</span>
-rbenv install -v 2.0.0-p353
- 
-<span class="c"># 将默认版本切换成最新版本</span>
-rbenv global 2.0.0-p353
-rbenv rehash
- 
-<span class="c"># 查看ruby版本（大于1.9.x），此时应显示2.0.0-p353</span>
-ruby -v
-<span class="nb">echo</span> <span class="s1">&#39;gem: --no-rdoc --no-ri&#39;</span> &gt;&gt; ~/.gemrc
-gem install bundler
-</code></pre></div>
-
-<h2>3. rails安装相关</h2>
-
-<div class="highlight"><pre><code class="bash"><span class="c"># 安装相关组件</span>
-rbenv <span class="nb">exec </span>gem install locale locale_rails gettext gettext_rails gettext_activerecord
- 
-<span class="c"># 安装rails</span>
-rbenv <span class="nb">exec </span>gem install rails
- 
-<span class="c"># 此时如果出现问题，找出问题所在安装所缺的库文件</span>
-<span class="c"># 安装rails过程中出现若干编码转换warning，可无视。</span>
-<span class="c"># 采用以下命令可以选择不安装rails文档（可以之后单独安装）</span>
-<span class="c"># rbenv exec gem install rails --no-ri --no-rdoc</span>
- 
-<span class="c"># sqlite安装，rails数据库连接所需</span>
-sudo yum install sqllite sqlite-devel
-rbenv <span class="nb">exec </span>gem install sqlite3-ruby
- 
-<span class="c"># 安装rails版本管理利器bundler</span>
-rbenv <span class="nb">exec </span>gem install bundler
-</code></pre></div>
-
-<h2>4. 安装配置Passenger组件</h2>
-
-<p>passenger时apache以及nginx与rails的访问控制组件，国人开发。<a href="https://www.phusionpassenger.com/">链接</a></p>
-
-<div class="highlight"><pre><code class="bash"><span class="c"># 必要组件安装</span>
-sudo yum install httpd-devel apr-devel apr-util-devel
- 
-<span class="c"># 安装passenger</span>
-rbenv <span class="nb">exec </span>gem install passenger
-passenger-install-apache2-module
- 
-<span class="c"># 查看apache是否成功加载passenger_module模块</span>
-apachectl -M
-<span class="c"># 组件交互做的相当人性化，按照最后的提示操作即可</span>
-<span class="c"># 最后会提示修改httpd.conf</span>
-</code></pre></div>
-
-<p>添加以下内容至httpd.conf(passenger安装完的提示内容完全复制粘贴)</p>
-
-<div class="highlight"><pre><code class="xml">LoadModule passenger_module /home/wills/.rbenv/versions/2.0.0-p353/lib/ruby/gems/2.0.0/gems/passenger-4.0.35/buildout/apache2/mod_passenger.so
-<span class="nt">&lt;IfModule</span> <span class="err">mod_passenger.c</span><span class="nt">&gt;</span>
-PassengerRoot /home/wills/.rbenv/versions/2.0.0-p353/lib/ruby/gems/2.0.0/gems/passenger-4.0.35
-PassengerDefaultRuby /home/wills/.rbenv/versions/2.0.0-p353/bin/ruby
-<span class="nt">&lt;/IfModule&gt;</span>
-</code></pre></div>
-
-<h2>初始化Rails应用</h2>
-
-<div class="highlight"><pre><code class="bash"><span class="nb">cd</span> ~
-rails new <span class="o">[</span>projectname<span class="o">]</span> -d mysql
- 
-<span class="c"># 此时可以通过WEBrick方式启动rails应用</span>
-<span class="nb">cd</span> <span class="o">[</span>projetname<span class="o">]</span>
-rails s
- 
-<span class="c"># 此时连接Ip:3000既可以看到欢迎页面或rails错误页面</span>
-</code></pre></div>
-
-<p>现打算在不采用WEBrick，用apache监听80以及3000端口，同事提供两个虚拟主机的服务，其中3000用于rails提供的服务
-修改httpd.conf virtualhost部分的设置如下（sample）</p>
-
-<div class="highlight"><pre><code class="xml">NameVirtualHost *:80
-<span class="nt">&lt;VirtualHost</span> <span class="err">*:80</span><span class="nt">&gt;</span>
-ServerAdmin yourmail@gmail.com
+<div class="highlight"><pre><code class="xml"><span class="nt">&lt;VirtualHost</span> <span class="err">*:80</span><span class="nt">&gt;</span>
+ServerAdmin email
 DocumentRoot /var/www/html/
-ServerName fdwills.asia
-<span class="nt">&lt;/VirtualHost&gt;</span>
- 
-# 监听3000端口
-# 如果无法连接此端口，请编辑iptables文件打开3000端口接受tcp请求
-Listen 3000
-NameVirtualHost *:3000
-<span class="nt">&lt;VirtualHost</span> <span class="err">*:3000</span><span class="nt">&gt;</span>
-ServerName fdwills.asia
-DocumentRoot /home/wills/app/fdwills.asia/public/
-AddDefaultCharset UTF-8
-RailsBaseURI /
-RailsEnv development
-PassengerEnabled on
-PassengerDefaultUser apache
-PassengerMaxPoolSize 2
+# fdwills.com的绑定需在域名服务商处绑定，若没有绑定，则可以通过IP连接
+ServerName fdwills.com
 <span class="nt">&lt;/VirtualHost&gt;</span>
 </code></pre></div>
 
-<p>ps. 一定要将DocumentRoot设置到应用下的public页面
-public下存放静态html。从rails4.0public页面下无index.html文件，如果rails无法检测到index.html，即会转至welcome</p>
+<h2>2. 修改iptables配置，打开相应端口（例）</h2>
 
-<h2>重启机器，通过IP或域名连接3000端口，出现rails的欢迎页面，Ok</h2>
+<div class="highlight"><pre><code class="text">*filter
+:INPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+-A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+-A INPUT -p icmp -j ACCEPT
+# local request
+-A INPUT -i lo -j ACCEPT
+#ssh
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 22 -j ACCEPT
+# http service
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 80 -j ACCEPT
+-A INPUT -j REJECT --reject-with icmp-host-prohibited
+-A FORWARD -j REJECT --reject-with icmp-host-prohibited
+COMMIT
+</code></pre></div>
+
+<p>关于IPtables的设置可以参考<a href="http://qiita.com/shimohiko/items/ec672655edb84578a82e">此处</a>http://qiita.com/shimohiko/items/ec672655edb84578a82e</p>
+
+<h2>3. 通过IP链接服务器，可以看到apache的欢迎页面，Ok</h2>
 
 </div>
 
