@@ -25,12 +25,13 @@ tags: 自动化
 <h2>对象</h2>
 
 这片博客的对象是以下各位
+
 1. 想知道Capistrano的概要的各位
 2. 想学着使用Capistrano的各位
 3. 想将手工操作自动化的各位
 4. 已经通过其他工具实现了自动化
 
-以上述各位作为对象，读了这篇博客之后能取得不错的收获事本文的目标。
+以上述各位作为对象，读了这篇博客之后能取得不错的收获是本文的目标。
 （对于已经通过诸如Capistrano、Ansible、Fabic之类的工具实现了服务器操作自动化的各位，可能就没有什么新意了）
 
 <h2>为什么deploy会花费大量的功夫</h2>
@@ -128,6 +129,7 @@ shell脚本的话，通过软件包管理软件安装要使用的工具，或者
 
 <h2>首先要记住的是</h2>
 粗分的话记住一下三个方面就够了
+
 1. Capistrano的模块
 2. Capistrano的工作流程
 3. Capistrano配置文件的书写方法
@@ -137,6 +139,7 @@ shell脚本的话，通过软件包管理软件安装要使用的工具，或者
 具体的代码和设定学习之前，如果能掌握Capistrano的根本的工作方式，从全局上理解Capistrano的话，学期里会轻松很多。这就是所谓的Capistrano模块。程序从文档开始，文章从目录开始读的话全局一了解理解起来就会很容易
 
 理解Capistrano的最低要求是一下的概念的理解
+
 1. Capistrano
 2. 库文件
 3. 配置文件
@@ -144,6 +147,7 @@ shell脚本的话，通过软件包管理软件安装要使用的工具，或者
 
 <h4>Capistrano</h4>
 Capistrano大致由以下三部分组成
+
 1. cap命令
 2. Capistrano的库文件
 3. 默认的deploy任务
@@ -496,10 +500,347 @@ task :archive => :update do
 end
 {%endhighlight%}
 
-按顺序来看。首先，通过task :achieve => :update do这样的写法：achieve任务=> update任务这个顺序。这是任务之间依赖关系的一种表现方式，就是指在执行achieve执行之前必须先执行update命令。
+按顺序来看。首先，通过task :achieve => :update do这样的写法：achieve任务=> update任务这个顺序。这是任务之间依赖关系的一种表现方式，就是指在执行achieve执行之前必须先执行update命令。实际上运行achieve任务的时候，Capistrano（严格意义上来说应该是作为Capistrano基础的Rake）考虑了这个关系，自动的执行了update之后执行achieve任务。根据这个关系，我们就能将任务之间依赖关系交给Capistrano来管理。
 
-续。。。
+下面是run_locally块，一开始是讲刚才取得的源代码采用sbt和sbt-pack进行build。sbtbuild之后，生成的压缩包的相对路径在标准输出中输出来。
 
+{%highlight text%}
+[info] Generating target/finagle_sample_app-0.1-SNAPSHOT.tar.gz
+{%endhighlight%}
+
+因为这个标准输出文件想要提交，所以将标准输出捕获，用正则表达式将相对路径抽出来转换成绝对路径。
+
+并且，在捕获的结果中用/\e\[\d{1, 2}m/这样的正则表达式将匹配到的字符串删除。这样就能消去escape序列。
+
+根据sbt执行的环境，采用ANSI字符escape序列将输出加上颜色。这里为了之后提交，不但将相对路径抽出来，而且将escape序列也翻译过来。像这样就能将这些escape序列删除。
+
+在代码例子的最后通过set将后续需要使用到的变量赋值，后面的任务可以通过fetch来获取。
+
+<h5>需要在远程主机上做的事</h5>
+
+远程主机需要执行的任务有以下这些类：
+
+1. 应用的上传和安装
+2. 应用的启动和停止
+3. web server，load balance等等操作
+4. 监视开始和停止
+
+本次就最基本的应用的上传，安装，启动以及停止来做说明。
+
+<h5>应用的上传，安装</h5>
+
+为了能使应用启动，首先应该将应用上传。
+
+例如，前面所述的Finagle应用的上传就可以这样做。
+
+{%highlight ruby%}
+task :deploy => :archive do
+  archive_path = fetch :archive_absolute_path
+  archive_name = fetch :archive_name
+  release_path = File.join(fetch(:deploy_to), fetch(:application))
+
+  on roles(:web) do
+    unless test "[ -d #{release_path} ]"
+      execute "mkdir -p #{release_path}"
+    end
+
+    upload! archive_path, release_path
+
+    execute "cd #{release_path}; tar -zxvf #{archive_name}"
+
+    # 这里写应用的启动脚本
+  end
+end
+{%endhighlight%}
+
+<h5>应用的启动和停止</h5>
+
+根据实施环境采用的框架，web server和应用分开来启动的情况也是有的。
+
+例如：
+
+1. 有java，node命令之类是应用启动的场合
+2. play framwork finagle akka等框架的组合的服务器也存在
+
+例如，之前的upload install之后，启动应用可以像下面这么写
+
+{%highlight ruby%}
+task :deploy => :archive do
+  archive_path = fetch :archive_absolute_path
+  archive_name = fetch :archive_name
+  release_path = File.join(fetch(:deploy_to), fetch(:application))
+
+  on roles(:web) do
+    unless test "[ -d #{release_path} ]"
+      execute "mkdir -p #{release_path}"
+    end
+
+    upload! archive_path, release_path
+
+    execute "cd #{release_path}; tar -zxvf #{archive_name}"
+
+    project_dir = File.join(release_path, capture("cd #{release_path}; ls -d */").chomp)
+
+    launch = capture("cd #{project_dir}; ls bin/*").chomp
+
+    execute "cd #{project_dir}; ( ( nohup #{launch} &>/dev/null ) & echo $! > RUNNING_PID)"
+  end
+end
+{%endhighlight%}
+
+利用tar命令将压缩包解压之前都与之前的upload build一样。
+
+在这之后，压缩包的包含的/bin目录下的应用名加版本号的可执行文件简单的找出来执行。
+
+例如，project_dir变量里面传入可执行文件所在文件夹的路径。
+
+然后，launch变量里传入可执行文件的路径，最后用nohup命令来执行脚本。
+
+使用nohup是为了让脚本持续执行。
+
+采用Capistrano是通过ssh链接服务器，之后连接会断开。之后会向启动脚本发出SIGHUP信号，启动脚本就会结束。为了防止这个采用nohup。
+
+到这里还没有结束，忘了什么没有？
+
+实际上到这里的例子，是基于应用一开始发布时候的的设定而写的。发布完成，开始运行的应用，首先要将其停止。停止应用的一个方法就是杀死进程。进程可以通过进程ID来区分。但是前一次启动的进程ID究竟是什么呢？
+
+实际上在前一次进程启动的时候，进程ID已经被保存下来了。你注意到deploy任务的最后echo $! > RUNNING_PID命令了吗？这个命令将启动之后的进程ID通过文件保存下来了。
+
+利用RUNNING_PID在第二次发布系统的时候将应用先停止。代码如下
+
+{%highlight ruby%}
+task :deploy => :archive do
+  archive_path = fetch :archive_absolute_path
+  archive_name = fetch :archive_name
+  release_path = File.join(fetch(:deploy_to), fetch(:application))
+
+  on roles(:web) do
+    begin
+      old_project_dir = File.join(release_path, capture("cd #{release_path}; ls -d */").chomp)
+      if test "[ -d #{old_project_dir} ]"
+        running_pid = capture("cd #{old_project_dir}; cat RUNNING_PID")
+        execute "kill #{running_pid}"
+      end
+    rescue => e
+      info "No previous release directory exists"
+    end
+
+    unless test "[ -d #{release_path} ]"
+      execute "mkdir -p #{release_path}"
+    end
+
+    upload! archive_path, release_path
+
+    execute "cd #{release_path}; tar -zxvf #{archive_name}"
+
+    project_dir = File.join(release_path, capture("cd #{release_path}; ls -d */").chomp)
+
+    launch = capture("cd #{project_dir}; ls bin/*").chomp
+
+    execute "cd #{project_dir}; ( ( nohup #{launch} &>/dev/null ) & echo $! > RUNNING_PID)"
+  end
+end
+{%endhighlight%}
+在on_roles块中加入了begin; ... ; rescue; ... end追加了块。
+
+这个里面只有当应用文件夹中的保存用进程ID的文件存在的时候才有效。
+
+<h2>例子总结</h2>
+
+上述的给出了大致的发布脚本的书写方法和流程。
+
+根据这个继续读下面的完成形态的脚本。
+
+<h4>config/deploy/test.rb</h4>
+
+{% highlight text%}
+作业对象服务器的设定
+{% endhighlight%}
+
+<h4>config/deploy.rb</h4>
+{% highlight text%}
+去除Capistrano默认任务
+任务 [代码获取]的定义
+任务 [build，压缩、打包]的定义
+任务 \[压缩包的build和安装\] [应用的启动和停止]的>定义
+{% endhighlight%}
+
+<h2>完成形态</h2>
+
+到这里为止说明的使用DSL的示例如下
+
+使用叫做Finagle的框架，最简单的发布设定。
+
+利用Vagrant登录到虚拟机器上，在虚拟机上登录取得Finagle的源代码，然后build install start
+
+<h3>config/deploy/test.rb</h3>
+{%highlight ruby%}
+server 'localhost', user: 'vagrant', roles: %w{web}
+{%endhighlight%}
+
+<h3>config/deploy.rb</h3>
+
+{%highlight ruby%}
+task :update do
+  run_locally do
+    application = fetch :application
+    if test "[ -d #{application} ]"
+      execute "cd #{application}; git pull"
+    else
+      execute "git clone #{fetch :repo_url} #{application}"
+    end
+  end
+end
+
+task :archive => :update do
+  run_locally do
+    sbt_output = capture "cd #{fetch :application}; sbt pack-archive"
+
+    sbt_output_without_escape_sequences = sbt_output.lines.map { |line| line.gsub(/\e\[\d{1,2}m/, '') }.join
+
+    archive_relative_path = sbt_output_without_escape_sequences.match(/\[info\] Generating (?<archive_path>.+\.tar\.gz)\s*$/)[:archive_path]
+    archive_name = archive_relative_path.match(/(?<archive_name>[^\/]+\.tar\.gz)$/)[:archive_name]
+    archive_absolute_path = File.join(capture("cd #{fetch(:application)}; pwd").chomp, archive_relative_path)
+
+    info archive_absolute_path
+    info archive_name
+
+    set :archive_absolute_path, archive_absolute_path
+    set :archive_name, archive_name
+  end
+end
+
+task :deploy => :archive do
+  archive_path = fetch :archive_absolute_path
+  archive_name = fetch :archive_name
+  release_path = File.join(fetch(:deploy_to), fetch(:application))
+
+  on roles(:web) do
+    begin
+      old_project_dir = File.join(release_path, capture("cd #{release_path}; ls -d */").chomp)
+      if test "[ -d #{old_project_dir} ]"
+        running_pid = capture("cd #{old_project_dir}; cat RUNNING_PID")
+        execute "kill #{running_pid}"
+      end
+    rescue => e
+      info "No previous release directory exists"
+    end
+    
+    unless test "[ -d #{release_path} ]"
+      execute "mkdir -p #{release_path}"
+    end
+
+    upload! archive_path, release_path
+
+    execute "cd #{release_path}; tar -zxvf #{archive_name}"
+
+    project_dir = File.join(release_path, capture("cd #{release_path}; ls -d */").chomp)
+
+    launch = capture("cd #{project_dir}; ls bin/*").chomp
+
+    execute "cd #{project_dir}; ( ( nohup #{launch} &>/dev/null ) & echo $! > RUNNING_PID)"
+  end
+end
+{%endhighlight%}
+
+<h2>Cap命令的执行</h2>
+
+到这里为止完成的config/deploy/阶段名称.rb（这次的阶段名称是test）以及config/deploy.rb（定义了多个任务），利用这些执行Capistrano。
+
+执行Capistrano是采用没前面说过的cap命令。
+
+{%highlight bash%}
+cap test deploy
+{%endhighlight%}
+
+cap命令的第一个与config/deploy/test.rb的test对应，第二个参数是执行的任务名称，与task: deploy中的deploy对应。
+
+第一次运行的结果如下
+{%highlight bash%}
+$ cap test deploy
+[deprecated] I18n.enforce_available_locales will default to true in the future. If you really want to skip validation of your locale you can set I18n.enforce_available_locales = false to avoid this message.
+DEBUG [41eec63b] Running /usr/bin/env [ -d finagle_sample_app ] on
+DEBUG [41eec63b] Command: [ -d finagle_sample_app ]
+DEBUG [41eec63b] Finished in 0.006 seconds with exit status 256 (failed).
+ INFO [752235f8] Running /usr/bin/env git clone git@github.com:mumoshu/finagle_sample_app finagle_sample_app on
+DEBUG [752235f8] Command: git clone git@github.com:mumoshu/finagle_sample_app finagle_sample_app
+DEBUG [752235f8]        Cloning into 'finagle_sample_app'...
+ INFO [752235f8] Finished in 2.827 seconds with exit status 0 (successful).
+DEBUG [262f8e15] Running /usr/bin/env cd finagle_sample_app; sbt pack-archive on
+DEBUG [262f8e15] Command: cd finagle_sample_app; sbt pack-archive
+DEBUG [262f8e15]        [info] Generating target/finagle_sample_app-0.1-SNAPSHOT.tar.gz
+DEBUG [262f8e15]        [success] Total time: 4 s, completed Dec 20, 2013 3:47:11 PM
+DEBUG [262f8e15] Finished in 21.705 seconds with exit status 0 (successful).
+DEBUG [88b1fbff] Running /usr/bin/env cd finagle_sample_app; pwd on
+DEBUG [88b1fbff] Command: cd finagle_sample_app; pwd
+DEBUG [88b1fbff]        /home/vagrant/cap-test/finagle_sample_app
+DEBUG [88b1fbff] Finished in 0.005 seconds with exit status 0 (successful).
+ INFO /home/vagrant/cap-test/finagle_sample_app/target/finagle_sample_app-0.1-SNAPSHOT.tar.gz
+ INFO finagle_sample_app-0.1-SNAPSHOT.tar.gz
+DEBUG [5ea6df07] Running /usr/bin/env [ -d /opt/testapps/finagle_sample_app ] on localhost
+DEBUG [5ea6df07] Command: [ -d /opt/testapps/finagle_sample_app ]
+DEBUG [5ea6df07] Finished in 0.513 seconds with exit status 0 (successful).
+DEBUG Uploading /home/vagrant/cap-test/finagle_sample_app/target/finagle_sample_app-0.1-SNAPSHOT.tar.gz 0.0%
+ INFO Uploading /home/vagrant/cap-test/finagle_sample_app/target/finagle_sample_app-0.1-SNAPSHOT.tar.gz 0.12%
+ INFO [a7940994] Running /usr/bin/env cd /opt/testapps/finagle_sample_app; tar -zxvf finagle_sample_app-0.1-SNAPSHOT.tar.gz on localhost
+DEBUG [a7940994] Command: cd /opt/testapps/finagle_sample_app; tar -zxvf finagle_sample_app-0.1-SNAPSHOT.tar.gz
+ INFO [a7940994] Finished in 0.259 seconds with exit status 0 (successful).
+DEBUG [b9d38bed] Running /usr/bin/env cd /opt/testapps/finagle_sample_app; ls -d */ on localhost
+DEBUG [b9d38bed] Command: cd /opt/testapps/finagle_sample_app; ls -d */
+DEBUG [b9d38bed]        finagle_sample_app-0.1-SNAPSHOT/
+DEBUG [b9d38bed] Finished in 0.009 seconds with exit status 0 (successful).
+DEBUG [2978d17e] Running /usr/bin/env cd /opt/testapps/finagle_sample_app/finagle_sample_app-0.1-SNAPSHOT/; ls bin/* on localhost
+DEBUG [2978d17e] Command: cd /opt/testapps/finagle_sample_app/finagle_sample_app-0.1-SNAPSHOT/; ls bin/*
+DEBUG [2978d17e]        bin/hello
+DEBUG [2978d17e] Finished in 0.009 seconds with exit status 0 (successful).
+ INFO [74987948] Running /usr/bin/env cd /opt/testapps/finagle_sample_app/finagle_sample_app-0.1-SNAPSHOT/; ( ( nohup bin/hello &>/dev/null ) & echo $! > RUNNING_PID) on localhost
+DEBUG [74987948] Command: cd /opt/testapps/finagle_sample_app/finagle_sample_app-0.1-SNAPSHOT/; ( ( nohup bin/hello &>/dev/null ) & echo $! > RUNNING_PID)
+ INFO [74987948] Finished in 0.008 seconds with exit status 0 (successful).
+{%endhighlight%}
+
+<h2>服务器状态的确认</h2>
+
+{%highlight bash%}
+
+$ ps aux | grep finagle_sample_app
+vagrant   6908  1.2  0.8 4313964 70760 ?       Sl   15:47   0:05 /usr/lib/jvm/java-6-openjdk-amd64/bin/java -cp /opt/testapps/finagle_sample_app/finagle_sample_app-0.1-SNAPSHOT/lib/* -Dprog.home=/opt/testapps/finagle_sample_app/finagle_sample_app-0.1-SNAPSHOT -Dprog.version=0.1-SNAPSHOT myprog.Hello
+vagrant   6954  0.0  0.0   8112   948 pts/0    S+   15:54   0:00 grep --color=auto finagle_sample_app
+{%endhighlight%}
+
+应用安好的通过ID为6908的进程启动起来。
+
+实际上与服务器通信试试
+
+{%highlight bash%}
+$ curl http://localhost:10000
+Hello Finagle!
+{%endhighlight%}
+
+再次运行脚本的时候，只是利用了上次的PID先杀掉进程在执行同样的任务而已。
+
+
+<h2>又长又臭。。</h2>
+
+这次简单的以Finagle为例说明了web应用的发布方法。
+
+注意到没有，实际上只是在runlocally和on的块中写入了shell命令。使用任意的命令就能完成各种任务。另外这次省略说明的是Capistrano里面能写任意的Ruby代码。
+
+<h2>总结</h2>
+
+1. 手动deploy需要花费时间
+2. 自动化需要学习的时间
+3. Capistrano能完成自动化任务
+4. 为了减少Capistrano的学习时间，简单说明了Capistrano的基础
+5. 举了个例子说明了应用的发布脚本
+6. 根据这个例子，能完成各种各样的自动化任务。
+
+<h2>其他</h2>
+
+这次说明到Capistrano为止，今后将以以下为话题继续介绍：
+
+1. plugin的使用方法
+2. 使用Play framework等实际的发布方法
+3. 不停止的deploy(rolling deploy)
 
 
 

@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>【译】Capistrano介绍</title>
+        <meta name="viewport" content="width=device-width">
+
+        <!-- syntax highlighting CSS -->
+        <link rel="stylesheet" href="/css/syntax.css">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="/css/main.css">
+
+    </head>
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">fdwills</a></h1>
+            <a class="extra" href="/">home</a>
+          </div>
+
+          <h2>【译】Capistrano介绍</h2>
+<p class="meta">21 Jan 2014</p>
+
+<div class="post">
+<p>翻译来自GREE开发者博客上的文章。<a href="http://labs.gree.jp/blog/2013/12/10084/">链接</a></p>
+
+<p>译者水平有限翻译如有误请指出。
+<h2>开始</h2></p>
+
+<p>这篇是GREE Advent Calendar 2013年21日文章。呈上！</p>
+
+<p>大家好，我是九冈。在GREE公司，我为了巩固Java以及Scala的传播基础，一个人制作了发布和监视的系统。</p>
+
+<p>这次将在这个工程中学习到的知识以这片名叫【Capistrano 3入门博客】的形式共享出来。</p>
+
+<h2>想将所有产生手动操作的可能性消灭在萌芽状态</h2>
+
+<p>这篇博客将介绍Capistrano 3的基础。Capistrano 3是基于Ruby的服务器操作以及自动发布的攻击。Capistrano 3的利用能够将系统发布等复杂的服务器操作自动化。这篇博客里将特别以发布为焦点，说明如何利用Capistrano将服务器操作自动化。</p>
+
+<p>学习Capistrano 3是需要花点时间的。为了降低各位所花的时间，于是我写了这篇文章。此处套话略去1000字。。。</p>
+
+<h2>对象</h2>
+
+<p>这片博客的对象是以下各位
+1. 想知道Capistrano的概要的各位
+2. 想学着使用Capistrano的各位
+3. 想将手工操作自动化的各位
+4. 已经通过其他工具实现了自动化</p>
+
+<p>以上述各位作为对象，读了这篇博客之后能取得不错的收获事本文的目标。
+（对于已经通过诸如Capistrano、Ansible、Fabic之类的工具实现了服务器操作自动化的各位，可能就没有什么新意了）</p>
+
+<h2>为什么deploy会花费大量的功夫</h2>
+
+<p>将做好的网络服务之类的应用发布给用户用，并不仅仅是开发这些应用，实际上还必须要讲这些服务放在服务器上让之运行。而且，这些应用的发布，意外的能花费大量的时间。究其原因，是因为发布相关的需求本身就存在这诸多分歧。</p>
+
+<h2>发布的需求是什么？</h2>
+
+<p>发布的需求大致有以下这些。</p>
+
+<ol>
+<li>应用的构成要素</li>
+<li>实施的环境与规模</li>
+<li>允许的发布时间间隔</li>
+<li>发布的最后期限</li>
+<li>预算是多少</li>
+</ol>
+
+<h3>应用的构成要素</h3>
+
+<p>采用什么语言开发，框架，是不是有中间层的应用</p>
+
+<h3>实施环境和规模</h3>
+
+<p>发布在什么样的服务器，多少台上</p>
+
+<h3>允许的发布时间间隔</h3>
+
+<p>从发布开始到发布结束花多少时间为好</p>
+
+<h3>发布的最后期限</h3>
+
+<p>有没有写自动化脚本的时间</p>
+
+<h3>预算是多少</h3>
+
+<p>为什么写自动化脚本会花费初期预算？
+比如说，每次都用同样的语言开发，使用同样的框架和中间件，每次都发布在同样的服务器上的话，事情就简单了。但是如果不是这样发布的难度就会增加 。</p>
+
+<h2>手动作业好不好？</h2>
+
+<p>前述的分歧较多的发布需求，我们采用自动化或者手动作业来完成。</p>
+
+<p>手动作业虽然有初期零投入的优点，但是须要不断有人持续的来写操作说明，并且反复操作过程中有出现错误的可能也是它的一个缺点。这就是想做自动化的原因。</p>
+
+<h2>那就做自动化不就好了么？</h2>
+
+<p>虽然这样想，但是做自动化有不得不翻越的壁垒。生成性壁垒和保守性壁垒。</p>
+
+<h3>生产性壁垒</h3>
+
+<p>用shell脚本？Ant？Ansible？Fabric？Capistrano？</p>
+
+<p>开发新项目的时候，是建立自己的发布系统，还是利用现有的比如OSS之类系统，都是一个选项。单独的发布系统编码和测试需要花功夫，用现有的系统的时候学习需要花功夫。想尽早开始开心的编码起来。</p>
+
+<h3>保守性壁垒</h3>
+
+<p>沿用性？扩展性？
+如果自己开发，沿用性有时候非常的困难。设计和编码的重点在什么能够设定，什么不能设定。如果能够留下充足的文档自然非常好，但是也时常有因为时间和预算的原因只够写完脚本而不能完成文档。</p>
+
+<h2>想自动化</h2>
+
+<p>因为这种原因，实际上我们在将发布自动化的时候，不得不考虑发布系统的沿用性和扩展性问题。这很难取舍。譬如“这次没时间了就手动操作”“先不管怎样自动化做起来，需要的时候在写文档”，也是没办法的事情。</p>
+
+<p>但是，如果说理想情况，那就是超越生产性和保守的屏障做好自动化。</p>
+
+<h2>用Capistrano 3开始做自动化</h2>
+
+<p>越过上面所述的生产性和保守性的壁垒的一个方法是，降低学习以及持续的成本。本文就是出于这个目的。</p>
+
+<h2>期待的结果</h2>
+
+<p>采用Capistrano带来的变化
+采用Capistrano，能够将各种发布流程同一成所谓的【Capistrano的设定】。</p>
+
+<p>这种变化带来的优点和缺点是什么的？</p>
+
+<h3>优点</h3>
+
+<h4>保守性程度高~maintainable~</h4>
+
+<p>写脚本的人设计思想是不一样的，读懂别人的设计思想是需要花时间的。如果大家都懂Capistrano的话，别人写的发布的设定动起来就很容易，就会导致保守性可持续性变高。</p>
+
+<h4>生成性程度高~productive~</h4>
+
+<p>shell脚本的话，通过软件包管理软件安装要使用的工具，或者通过git获取所需要的脚本，不同的人不同的组织有不同的选择方法。安装的话通过bundle install命令能将包括Capistrano本身，库文件以及扩展在内的所有囊括进来。</p>
+
+<h4>柔软度高~flexible~</h4>
+
+<p>是不是手上已经有为了发布而写的说明文档或者shell脚本了呢？
+因为Capistrano任务本身只是“按照一定的顺序执行脚本”，这就和为了发布为写的脚本和操作流程是一样的。用nohup将操作放到后台运行，upstart/monit/daemontools/god之类的模块化，进程监视，进程ID的管理之类的脚本等等上述通过Ruby代码表象出来就行了。所以，如果与发布相关的东西，如果写进了Capistrano里，就很少有被限制的需求。</p>
+
+<h4>易读易写</h4>
+
+<p>能够用就像英语一样的精炼的DSL编写代码</p>
+
+<p>而且，本地环境与服务器的操作在DSL语法上被明确的区分开来。首先本地环境上做什么，服务器环境生做什么，所谓的基于大局的脚本在写法上被很自然的被规约起来。</p>
+
+<h3>缺点</h3>
+
+<h4>学习Capistrano需要花时间</h4>
+
+<p>确实需要花时间按，尤其是Capistrano 3 2013年8月刚刚发布。首先资料很少，就别说日语资料了。要记住新的东西本身就很困难，资料也少就难上加难了。</p>
+
+<p>于是我写了这篇文章。如果大家能通过这篇文章很快的掌握Capistrano，我的目的也就达到了</p>
+
+<h2>首先要记住的是</h2>
+
+<p>粗分的话记住一下三个方面就够了
+1. Capistrano的模块
+2. Capistrano的工作流程
+3. Capistrano配置文件的书写方法</p>
+
+<h3>Capistrano模块</h3>
+
+<p>具体的代码和设定学习之前，如果能掌握Capistrano的根本的工作方式，从全局上理解Capistrano的话，学期里会轻松很多。这就是所谓的Capistrano模块。程序从文档开始，文章从目录开始读的话全局一了解理解起来就会很容易</p>
+
+<p>理解Capistrano的最低要求是一下的概念的理解
+1. Capistrano
+2. 库文件
+3. 配置文件
+4. host</p>
+
+<h4>Capistrano</h4>
+
+<p>Capistrano大致由以下三部分组成
+1. cap命令
+2. Capistrano的库文件
+3. 默认的deploy任务</p>
+
+<p>我们利用Capistrano的库文件和默认的deploy任务描述配置文件，然后通过cap命令执行。这样就能使Capistrano自动的进行一系列的操作。</p>
+
+<h4>库文件</h4>
+
+<p>Capistrano仅仅是一个框架，大家的应用开发时固有的deploy方法，服务器信息并没有被包含在里面。所以为了各自的自动化任务，必须要对Capistrano进行配置。</p>
+
+<p>关于配置，有只是用一次的配置和使用多次的配置之分。再利用程度高的东西被称为插件，具体有以下两种。</p>
+
+<ol>
+<li>Ruby插件</li>
+<li>Capistrano扩展</li>
+</ol>
+
+<h4>配置文件</h4>
+
+<p>配置Capistrano的时候，只是用一次的设定（例如某个项目的服务器信息，某个项目固有的数据）不在上述的插件里面设置而在配置文件当中设置。具体有以下两种：</p>
+
+<ol>
+<li>config/deploy.rb</li>
+<li>config/deploy/任意阶段名称.rb</li>
+</ol>
+
+<p>“deploy.rb”是发布的共通的设定和操作流程的书写的地。“任意阶段名称.rb”是线上环境，测试环境，开发环境等根据环境不同而不同的设定书写的地方。</p>
+
+<h4>host</h4>
+
+<p>发布的环境可以根据发布对象分为本地环境和服务器环境两种。必须要决定在什么样的环境执行什么样的命令。比如说本地环境build应用，在服务器发布应用，如果有这个认识的话就容易理解 多。</p>
+
+<h3>Capistrano的工作流程</h3>
+
+<p>为了使用Capistrano，为什么使用，用什么操作，要写什么代码好呢？让我们记住大体的流程吧。</p>
+
+<ol>
+<li>Capistrano的安装</li>
+<li>建立配置文件的模型</li>
+<li>修改配置文件</li>
+<li>执行cap命令</li>
+</ol>
+
+<p>以上的流程后面将做具体说明。</p>
+
+<h2>试着用Capistrano</h2>
+
+<h3>1. Capistrano的安装</h3>
+
+<p>一键安装Capistrano</p>
+
+<p>如果安装了RubyGems的话，执行以下命令就能安装Capistrano</p>
+
+<div class="highlight"><pre><code class="bash">gem install capistrano
+</code></pre></div>
+
+<p>如果执行gem须要root权限的话，别忘了加上sudo</p>
+
+<p>如果是使用bundler的话，在Gemfile里面追加上以下然后运行bundle intall命令就能安装Capistrano</p>
+
+<div class="highlight"><pre><code class="ruby"><span class="n">gem</span> <span class="s1">&#39;capistrano&#39;</span><span class="p">,</span> <span class="s1">&#39;~&gt; 3.0.1&#39;</span>
+</code></pre></div>
+
+<p>不用bundler的话上述可以忽略。</p>
+
+<h3>2. 建立配置文件的模型</h3>
+
+<p>Capistrano安装完了之后，建立Capistrano配置文件存放的地方，名字任意</p>
+
+<p>然后运行cap intall命令，上述的配置文件就生成了。</p>
+
+<div class="highlight"><pre><code class="bash">mkdir <span class="nb">test</span>-project
+<span class="nb">cd test</span>-project
+cap install
+</code></pre></div>
+
+<h3>3. 配置文件设定</h3>
+
+<p>执行cap install命令之后，上述的配置文件就自动生成了。修改了这些配置文件之后就能实现自动化。</p>
+
+<h3>4. 配置文件完成之后大致形态</h3>
+
+<p>为了简单的理解，现在把完成之后的配置文件作为示例放出来。这样就能朝着示例文件方向一步一步讲解设定方法。</p>
+
+<h4>config/deploy/test.rb</h4>
+
+<div class="highlight"><pre><code class="text">作业对象服务器的设定
+</code></pre></div>
+
+<h4>config/deploy.rb</h4>
+
+<div class="highlight"><pre><code class="text">去除Capistrano默认任务
+任务 [代码获取]的定义
+任务 [build，压缩、打包]的定义
+任务 \[压缩包的build和安装\] [应用的启动和停止]的定义
+</code></pre></div>
+
+<h3>5. Capistrano默认任务的消去</h3>
+
+<p>首先把Capistrano建立的默认任务全部删掉。</p>
+
+<p>正如之前所述，Capistrano框架存在一些默认的任务。Capistrano默认任务包含了Capistrano本身推荐的一些deploy方法。例如通过链接将之前deploy的结果保存下来等等。</p>
+
+<p>这里是否使用链接是开发的具体内容，在本片文章的范围之外。正因为如此，我们这里集中将如何将既存的手动作业利用capistrano自动化。</p>
+
+<p>在现有Capistrano推荐的deploy方法基础上，将已有的deploy说明书改成Capistrano比较花费时间。与其相比，不如首先做个自己的deploy配置，如果有需要再慢慢改成Capistrano推荐的deploy流程。为什么这样呢，因为一下子需要改变的东西比较少而已。所以先将Capistrano默认任务全部删除。</p>
+
+<div class="highlight"><pre><code class="ruby"><span class="n">framework_tasks</span> <span class="o">=</span> <span class="o">[</span><span class="ss">:starting</span><span class="p">,</span> <span class="ss">:started</span><span class="p">,</span> <span class="ss">:updating</span><span class="p">,</span> <span class="ss">:updated</span><span class="p">,</span> <span class="ss">:publishing</span><span class="p">,</span> <span class="ss">:published</span><span class="p">,</span> <span class="ss">:finishing</span><span class="p">,</span> <span class="ss">:finished</span><span class="o">]</span>
+
+<span class="n">framework_tasks</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+  <span class="no">Rake</span><span class="o">::</span><span class="no">Task</span><span class="o">[</span><span class="s2">&quot;deploy:</span><span class="si">#{</span><span class="n">t</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">].</span><span class="n">clear</span>
+<span class="k">end</span>
+
+<span class="no">Rake</span><span class="o">::</span><span class="no">Task</span><span class="o">[</span><span class="ss">:deploy</span><span class="o">].</span><span class="n">clear</span>
+</code></pre></div>
+
+<p>调用Capistrano里定义的默认deploy任务，多个[deploy:子任务]将被定义。运行Capistrano里定义的默认deploy的情况下，重定义[deploy:子任务]就够了，非常方便。但这里没有必要座椅全部删掉。删除任务的代码是</p>
+
+<div class="highlight"><pre><code class="ruby"><span class="ss">Rake</span><span class="p">:</span><span class="no">Task</span><span class="o">[</span><span class="err">删除的任务名</span><span class="o">].</span><span class="n">clear</span>
+</code></pre></div>
+
+<p>实际上Capistrano 3里面定义了叫做Rake的build工具。Rake的作用就是通过命令行或者应用的调用，完成定义好的任务。这里运用Rake将已有的任务删除。</p>
+
+<h3>6. 书写类如 config/deploy/阶段名称.rb 的文件</h3>
+
+<p>阶段名称.rb是deploy每个阶段的设定。比如有以下这些</p>
+
+<ol>
+<li>这个阶段的对象服务器</li>
+<li>仅仅在这个阶段执行的任务</li>
+</ol>
+
+<p>典型的是之前说 对象服务器的设定，将包含一下这些信息：</p>
+
+<ol>
+<li>host名</li>
+<li>服务器角色</li>
+<li>登录用户</li>
+<li>SSH的设定</li>
+<li>其他与服务器相关的设定</li>
+</ol>
+
+<p>夭折的那个这些，server这个关键字按照一下的写法来设定</p>
+
+<div class="highlight"><pre><code class="ruby"><span class="c1"># server hostname, user: login_user, roles: %{serverrole}, 其他设定: 值, ...</span>
+<span class="n">server</span> <span class="s1">&#39;localhost&#39;</span><span class="p">,</span> <span class="ss">user</span><span class="p">:</span> <span class="s1">&#39;vagrant&#39;</span><span class="p">,</span> <span class="ss">roles</span><span class="p">:</span> <span class="sx">%w{web}</span>
+</code></pre></div>
+
+<p>这一行包含了以下信息：</p>
+
+<ol>
+<li>将本地环境作为对象(执行Capistrano的主机)</li>
+<li>赋予这个服务器 webserver的role</li>
+<li>用vagrant用户登陆这个服务器</li>
+</ol>
+
+<h3>7. 书写config/deploy.rb</h3>
+
+<p>config/deploy.rb包含了各个阶段共同的设定，经常有的有如下。</p>
+
+<ol>
+<li>应用名称</li>
+<li>repository的名称</li>
+<li>利用的SCM</li>
+<li>任务</li>
+<li>各种各样的执行任务的命令</li>
+</ol>
+
+<p>类似这样的设定通过DSL来书写，DSL是有类似如下定义的语法</p>
+
+<ol>
+<li>设定的变更和取得</li>
+<li>任务的定义</li>
+</ol>
+
+<h4>设定值的变更和取得</h4>
+
+<p>应用名，Repo的名字等等的设定通过set name, value的方式设定，fetch name的方式获取。</p>
+
+<p>一旦在deploy.rb里面设定的值，就能在deploy.rb以及deploy/阶段名.rb的所有地方获取到。</p>
+
+<div class="highlight"><pre><code class="ruby"><span class="n">set</span> <span class="ss">:repo_url</span><span class="p">,</span> <span class="s1">&#39;git@github.com:mumoshu/finagle_sample_app&#39;</span>
+
+<span class="n">fetch</span> <span class="ss">:repo_url</span>
+<span class="c1">#=&gt; &quot;git@github.com:mumoshu/finagle_sample_app&quot;</span>
+</code></pre></div>
+
+<h4>任务的定义</h4>
+
+<p>各个任务通过task name do; ... end代码块的方式描述。</p>
+
+<p>例如一个叫做:uptime的任务可以这样定义</p>
+
+<div class="highlight"><pre><code class="ruby"><span class="n">task</span> <span class="ss">:uptime</span> <span class="k">do</span>
+  <span class="c1">#这里写任务具体的内容</span>
+<span class="k">end</span>
+</code></pre></div>
+
+<p>这里将接着写task代码块中run_locally do; ... end呀，或者on 对象服务器 do; ... end部分。</p>
+
+<p>前者run_locally块中写要在本地运行的命令</p>
+
+<p>后者on代码块中写在服务器上执行的命令</p>
+
+<div class="highlight"><pre><code class="ruby"><span class="n">task</span> <span class="ss">:uptime</span> <span class="k">do</span>
+  <span class="n">run_locally</span> <span class="k">do</span>
+    <span class="c1"># 这里写在本地环境执行的命令</span>
+  <span class="k">end</span>
+  <span class="n">on</span> <span class="err">対象サーバ</span> <span class="k">do</span>
+    <span class="c1"># 这里写在服务器执行的命令</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div>
+
+<p>on块重点对象服务器，能够在前面讲的[阶段名.rb]里面设定。</p>
+
+<p>例如只对被赋予了叫做(:web)的角色的服务器作业的时候，可以向下面这样写。</p>
+
+<div class="highlight"><pre><code class="ruby"><span class="n">task</span> <span class="ss">:uptime</span> <span class="k">do</span>
+  <span class="n">run_locally</span> <span class="k">do</span>
+    <span class="c1"># 这里写本地运行的命令</span>
+  <span class="k">end</span>
+  <span class="n">on</span> <span class="n">roles</span><span class="p">(</span><span class="ss">:web</span><span class="p">)</span> <span class="k">do</span>
+    <span class="c1"># 这里写在服务器上执行的命令</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div>
+
+<h5>通过execute执行命令</h5>
+
+<p>最后执行的命令写在run_locally或on块里面。</p>
+
+<p>执行命令通过execute关键字。</p>
+
+<p>例如要执行uptime命令写成下面这样</p>
+
+<div class="highlight"><pre><code class="ruby"><span class="n">task</span> <span class="ss">:uptime</span> <span class="k">do</span>
+  <span class="n">run_locally</span> <span class="k">do</span>
+    <span class="n">execute</span> <span class="s2">&quot;uptime&quot;</span>
+  <span class="k">end</span>
+  <span class="n">on</span> <span class="n">roles</span><span class="p">(</span><span class="ss">:web</span><span class="p">)</span> <span class="k">do</span>
+    <span class="n">execute</span> <span class="s2">&quot;uptime&quot;</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div>
+
+<h5>通过capture获取执行结果</h5>
+
+<p>执行了execute的场合，这个命令的标准输出就会被丢掉。如果要获取标准输出的时候就可以通过capture命令执行。</p>
+
+<div class="highlight"><pre><code class="ruby"><span class="n">task</span> <span class="ss">:uptime</span> <span class="k">do</span>
+  <span class="n">run_locally</span> <span class="k">do</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">capture</span> <span class="s2">&quot;uptime&quot;</span>
+  <span class="k">end</span>
+  <span class="n">on</span> <span class="n">roles</span><span class="p">(</span><span class="ss">:web</span><span class="p">)</span> <span class="k">do</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">capture</span> <span class="s2">&quot;uptime&quot;</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div>
+
+<p>单纯的将execute换成capture，作为参数传递给capture的命令就会被执行，执行之后的标准输出文字就会被捕获。所以上面代码的意思就是将命令执行后的标准输出赋给output。</p>
+
+<h5>通过info输出到log</h5>
+
+<p>仅仅是获取可能没啥意义，尝试用Capistrano输出到log中。为了输出到log，根据run_locally和on块中的log等级，通过debug logmessage, info logmessage, warn logmessage, error logmessage, fatal logmessage等语法输出到log中。例如可以像如下这样使用info命令。</p>
+
+<div class="highlight"><pre><code class="ruby"><span class="n">task</span> <span class="ss">:uptime</span> <span class="k">do</span>
+  <span class="n">run_locally</span> <span class="k">do</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">capture</span> <span class="s2">&quot;uptime&quot;</span>
+    <span class="n">info</span> <span class="n">output</span>
+  <span class="k">end</span>
+  <span class="n">on</span> <span class="n">roles</span><span class="p">(</span><span class="ss">:web</span><span class="p">)</span> <span class="k">do</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">capture</span> <span class="s2">&quot;uptime&quot;</span>
+    <span class="n">info</span> <span class="n">output</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div>
+
+<h5>任务的定义：总结</h5>
+
+<p>像这样，在run_locally on块中可以使用execute capture info等多种方法。可以利用的方法在<a href="https://github.com/capistrano/sshkit/blob/v1.2.0/lib/sshkit/backends/abstract.rb#L21">这个文件</a>里面定义了。</p>
+
+<p>这里面介绍的语法经常被使用到的是</p>
+
+<div class="highlight"><pre><code class="ruby"><span class="n">upload!</span> <span class="err">本地文件路径</span><span class="p">,</span> <span class="err">远程文件路径</span>
+</code></pre></div>
+
+<p>就像这个命令的名字一样是将文件进行传输。使用的方法是在on 对象服务器 do; ... end块里面执行，这样就能将在Capistrano执行的服务器上的文件通过SCP传输到对象服务器上。</p>
+
+<p>记住这些经常被使用到的命令：</p>
+
+<p>execute capture info upload!</p>
+
+<h2>任务的例子</h2>
+
+<p>任务在本地环境上执行和服务器上执行的分开来管理。这里有一些例子。</p>
+
+<h3>在本地环境上执行的例子</h3>
+
+<p>deploy.rb和阶段名.rb上要写的有如下</p>
+
+<ol>
+<li>源代码的获取</li>
+<li>build和压缩打包</li>
+</ol>
+
+<h4>源代码的获取</h4>
+
+<p>在应用发布之前，须要在某个时间获取源代码。</p>
+
+<p>例如，如果是采用Git进行版本管理的项目，下面这段代码就能获取源代码：</p>
+
+<div class="highlight"><pre><code class="ruby"><span class="n">set</span> <span class="ss">:application</span><span class="p">,</span> <span class="s1">&#39;finalge_sample_app&#39;</span>
+<span class="n">set</span> <span class="ss">:repo_url</span><span class="p">,</span> <span class="s1">&#39;git@github.com:mumoshu/finagle_sample_app.git&#39;</span>
+
+<span class="n">task</span> <span class="ss">:update</span> <span class="k">do</span>
+  <span class="n">run_locally</span> <span class="k">do</span>
+    <span class="n">application</span> <span class="o">=</span> <span class="n">fetch</span> <span class="ss">:application</span>
+    <span class="k">if</span> <span class="nb">test</span> <span class="s2">&quot;[ -d </span><span class="si">#{</span><span class="n">application</span><span class="si">}</span><span class="s2"> ]&quot;</span>
+      <span class="n">execute</span> <span class="s2">&quot;cd </span><span class="si">#{</span><span class="n">application</span><span class="si">}</span><span class="s2">; git pull&quot;</span>
+      <span class="k">end</span>
+    <span class="k">else</span>
+      <span class="n">execute</span> <span class="s2">&quot;git clone </span><span class="si">#{</span><span class="n">fetch</span> <span class="ss">:repo_url</span><span class="si">}</span><span class="s2"> </span><span class="si">#{</span><span class="n">application</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div>
+
+<p>在这个例子当中，定义了 :update的任务来获取代码，为了在本地环境上获取代码，代码的执行备方法run_locally里面。</p>
+
+<p>在run_locally里面，根据有没有存在这个文件夹来判断是采用clone方法还是pull方法。</p>
+
+<p>如果没有源代码，就根据设定好的repo_url通过git clone获取代码。保存的路径通过application设定。如果已经存在了源代码，，就先移动到代码目录下，再执行git pull命令更新之。</p>
+
+<h4>build和打包压缩</h4>
+
+<p>源码的编译在其他资源的操作之前进行，结果通过tarball，zip，war，debian package等等转换成可以再次发布的形式。</p>
+
+<p>例如之前取得了代码的应用，在之后加入build和压缩打包的过程可以如下。</p>
+
+<p>在这里利用叫做sbt的build和压缩工具，需要安装一个叫做sbt-pack的插件。（有兴趣请自己搜索）</p>
+
+<div class="highlight"><pre><code class="ruby"><span class="n">task</span> <span class="ss">:archive</span> <span class="o">=&gt;</span> <span class="ss">:update</span> <span class="k">do</span>
+  <span class="n">run_locally</span> <span class="k">do</span>
+    <span class="n">sbt_output</span> <span class="o">=</span> <span class="n">capture</span> <span class="s2">&quot;cd </span><span class="si">#{</span><span class="n">fetch</span> <span class="ss">:application</span><span class="si">}</span><span class="s2">; sbt pack-archive&quot;</span>
+
+    <span class="n">sbt_output_without_escape_sequences</span> <span class="o">=</span> <span class="n">sbt_output</span><span class="o">.</span><span class="n">lines</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span> <span class="o">|</span><span class="n">line</span><span class="o">|</span> <span class="n">line</span><span class="o">.</span><span class="n">gsub</span><span class="p">(</span><span class="sr">/\e\[\d{1,2}m/</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="p">}</span><span class="o">.</span><span class="n">join</span>
+
+    <span class="n">archive_relative_path</span> <span class="o">=</span> <span class="n">sbt_output_without_escape_sequences</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sr">/\[info\] Generating (?&lt;archive_path&gt;.+\.tar\.gz)\s*$/</span><span class="p">)</span><span class="o">[</span><span class="ss">:archive_path</span><span class="o">]</span>
+    <span class="n">archive_name</span> <span class="o">=</span> <span class="n">archive_relative_path</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sr">/(?&lt;archive_name&gt;[^\/]+\.tar\.gz)$/</span><span class="p">)</span><span class="o">[</span><span class="ss">:archive_name</span><span class="o">]</span>
+    <span class="n">archive_absolute_path</span> <span class="o">=</span> <span class="no">File</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">capture</span><span class="p">(</span><span class="s2">&quot;cd </span><span class="si">#{</span><span class="n">fetch</span><span class="p">(</span><span class="ss">:application</span><span class="p">)</span><span class="si">}</span><span class="s2">; pwd&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">chomp</span><span class="p">,</span> <span class="n">archive_relative_path</span><span class="p">)</span>
+
+    <span class="n">info</span> <span class="n">archive_absolute_path</span>
+    <span class="n">info</span> <span class="n">archive_name</span>
+
+    <span class="n">set</span> <span class="ss">:archive_absolute_path</span><span class="p">,</span> <span class="n">archive_absolute_path</span>
+    <span class="n">set</span> <span class="ss">:archive_name</span><span class="p">,</span> <span class="n">archive_name</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div>
+
+<p>按顺序来看。首先，通过task :achieve =&gt; :update do这样的写法：achieve任务=&gt; update任务这个顺序。这是任务之间依赖关系的一种表现方式，就是指在执行achieve执行之前必须先执行update命令。实际上运行achieve任务的时候，Capistrano（严格意义上来说应该是作为Capistrano基础的Rake）考虑了这个关系，自动的执行了update之后执行achieve任务。根据这个关系，我们就能将任务之间依赖关系交给Capistrano来管理。</p>
+
+<p>下面是run_locally块，一开始是讲刚才取得的源代码采用sbt和sbt-pack进行build。sbtbuild之后，生成的压缩包的相对路径在标准输出中输出来。</p>
+
+<div class="highlight"><pre><code class="text">[info] Generating target/finagle_sample_app-0.1-SNAPSHOT.tar.gz
+</code></pre></div>
+
+<p>因为这个标准输出文件想要提交，所以将标准输出捕获，用正则表达式将相对路径抽出来转换成绝对路径。</p>
+
+<p>并且，在捕获的结果中用/\e[\d{1, 2}m/这样的正则表达式将匹配到的字符串删除。这样就能消去escape序列。</p>
+
+<p>根据sbt执行的环境，采用ANSI字符escape序列将输出加上颜色。这里为了之后提交，不但将相对路径抽出来，而且将escape序列也翻译过来。像这样就能将这些escape序列删除。</p>
+
+<p>在代码例子的最后通过set将后续需要使用到的变量赋值，后面的任务可以通过fetch来获取。</p>
+
+<h5>需要在远程主机上做的事</h5>
+
+<p>远程主机需要执行的任务有以下这些类：</p>
+
+<ol>
+<li>应用的上传和安装</li>
+<li>应用的启动和停止</li>
+<li>web server，load balance等等操作</li>
+<li>监视开始和停止</li>
+</ol>
+
+<p>本次就最基本的应用的上传，安装，启动以及停止来做说明。</p>
+
+<h5>应用的上传，安装</h5>
+
+<p>为了能使应用启动，首先应该将应用上传。</p>
+
+<p>例如，前面所述的Finagle应用的上传就可以这样做。</p>
+
+<div class="highlight"><pre><code class="ruby"><span class="n">task</span> <span class="ss">:deploy</span> <span class="o">=&gt;</span> <span class="ss">:archive</span> <span class="k">do</span>
+  <span class="n">archive_path</span> <span class="o">=</span> <span class="n">fetch</span> <span class="ss">:archive_absolute_path</span>
+  <span class="n">archive_name</span> <span class="o">=</span> <span class="n">fetch</span> <span class="ss">:archive_name</span>
+  <span class="n">release_path</span> <span class="o">=</span> <span class="no">File</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fetch</span><span class="p">(</span><span class="ss">:deploy_to</span><span class="p">),</span> <span class="n">fetch</span><span class="p">(</span><span class="ss">:application</span><span class="p">))</span>
+
+  <span class="n">on</span> <span class="n">roles</span><span class="p">(</span><span class="ss">:web</span><span class="p">)</span> <span class="k">do</span>
+    <span class="k">unless</span> <span class="nb">test</span> <span class="s2">&quot;[ -d </span><span class="si">#{</span><span class="n">release_path</span><span class="si">}</span><span class="s2"> ]&quot;</span>
+      <span class="n">execute</span> <span class="s2">&quot;mkdir -p </span><span class="si">#{</span><span class="n">release_path</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">end</span>
+
+    <span class="n">upload!</span> <span class="n">archive_path</span><span class="p">,</span> <span class="n">release_path</span>
+
+    <span class="n">execute</span> <span class="s2">&quot;cd </span><span class="si">#{</span><span class="n">release_path</span><span class="si">}</span><span class="s2">; tar -zxvf </span><span class="si">#{</span><span class="n">archive_name</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="c1"># 这里写应用的启动脚本</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div>
+
+<h5>应用的启动和停止</h5>
+
+<p>根据实施环境采用的框架，web server和应用分开来启动的情况也是有的。</p>
+
+<p>例如：</p>
+
+<ol>
+<li>有java，node命令之类是应用启动的场合</li>
+<li>play framwork finagle akka等框架的组合的服务器也存在</li>
+</ol>
+
+<p>例如，之前的upload install之后，启动应用可以像下面这么写</p>
+
+<div class="highlight"><pre><code class="ruby"><span class="n">task</span> <span class="ss">:deploy</span> <span class="o">=&gt;</span> <span class="ss">:archive</span> <span class="k">do</span>
+  <span class="n">archive_path</span> <span class="o">=</span> <span class="n">fetch</span> <span class="ss">:archive_absolute_path</span>
+  <span class="n">archive_name</span> <span class="o">=</span> <span class="n">fetch</span> <span class="ss">:archive_name</span>
+  <span class="n">release_path</span> <span class="o">=</span> <span class="no">File</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fetch</span><span class="p">(</span><span class="ss">:deploy_to</span><span class="p">),</span> <span class="n">fetch</span><span class="p">(</span><span class="ss">:application</span><span class="p">))</span>
+
+  <span class="n">on</span> <span class="n">roles</span><span class="p">(</span><span class="ss">:web</span><span class="p">)</span> <span class="k">do</span>
+    <span class="k">unless</span> <span class="nb">test</span> <span class="s2">&quot;[ -d </span><span class="si">#{</span><span class="n">release_path</span><span class="si">}</span><span class="s2"> ]&quot;</span>
+      <span class="n">execute</span> <span class="s2">&quot;mkdir -p </span><span class="si">#{</span><span class="n">release_path</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">end</span>
+
+    <span class="n">upload!</span> <span class="n">archive_path</span><span class="p">,</span> <span class="n">release_path</span>
+
+    <span class="n">execute</span> <span class="s2">&quot;cd </span><span class="si">#{</span><span class="n">release_path</span><span class="si">}</span><span class="s2">; tar -zxvf </span><span class="si">#{</span><span class="n">archive_name</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="n">project_dir</span> <span class="o">=</span> <span class="no">File</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">release_path</span><span class="p">,</span> <span class="n">capture</span><span class="p">(</span><span class="s2">&quot;cd </span><span class="si">#{</span><span class="n">release_path</span><span class="si">}</span><span class="s2">; ls -d */&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">chomp</span><span class="p">)</span>
+
+    <span class="n">launch</span> <span class="o">=</span> <span class="n">capture</span><span class="p">(</span><span class="s2">&quot;cd </span><span class="si">#{</span><span class="n">project_dir</span><span class="si">}</span><span class="s2">; ls bin/*&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">chomp</span>
+
+    <span class="n">execute</span> <span class="s2">&quot;cd </span><span class="si">#{</span><span class="n">project_dir</span><span class="si">}</span><span class="s2">; ( ( nohup </span><span class="si">#{</span><span class="n">launch</span><span class="si">}</span><span class="s2"> &amp;&gt;/dev/null ) &amp; echo $! &gt; RUNNING_PID)&quot;</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div>
+
+<p>利用tar命令将压缩包解压之前都与之前的upload build一样。</p>
+
+<p>在这之后，压缩包的包含的/bin目录下的应用名加版本号的可执行文件简单的找出来执行。</p>
+
+<p>例如，project_dir变量里面传入可执行文件所在文件夹的路径。</p>
+
+<p>然后，launch变量里传入可执行文件的路径，最后用nohup命令来执行脚本。</p>
+
+<p>使用nohup是为了让脚本持续执行。</p>
+
+<p>采用Capistrano是通过ssh链接服务器，之后连接会断开。之后会向启动脚本发出SIGHUP信号，启动脚本就会结束。为了防止这个采用nohup。</p>
+
+<p>到这里还没有结束，忘了什么没有？</p>
+
+<p>实际上到这里的例子，是基于应用一开始发布时候的的设定而写的。发布完成，开始运行的应用，首先要将其停止。停止应用的一个方法就是杀死进程。进程可以通过进程ID来区分。但是前一次启动的进程ID究竟是什么呢？</p>
+
+<p>实际上在前一次进程启动的时候，进程ID已经被保存下来了。你注意到deploy任务的最后echo $! &gt; RUNNING_PID命令了吗？这个命令将启动之后的进程ID通过文件保存下来了。</p>
+
+<p>利用RUNNING_PID在第二次发布系统的时候将应用先停止。代码如下</p>
+
+<div class="highlight"><pre><code class="ruby"><span class="n">task</span> <span class="ss">:deploy</span> <span class="o">=&gt;</span> <span class="ss">:archive</span> <span class="k">do</span>
+  <span class="n">archive_path</span> <span class="o">=</span> <span class="n">fetch</span> <span class="ss">:archive_absolute_path</span>
+  <span class="n">archive_name</span> <span class="o">=</span> <span class="n">fetch</span> <span class="ss">:archive_name</span>
+  <span class="n">release_path</span> <span class="o">=</span> <span class="no">File</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fetch</span><span class="p">(</span><span class="ss">:deploy_to</span><span class="p">),</span> <span class="n">fetch</span><span class="p">(</span><span class="ss">:application</span><span class="p">))</span>
+
+  <span class="n">on</span> <span class="n">roles</span><span class="p">(</span><span class="ss">:web</span><span class="p">)</span> <span class="k">do</span>
+    <span class="k">begin</span>
+      <span class="n">old_project_dir</span> <span class="o">=</span> <span class="no">File</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">release_path</span><span class="p">,</span> <span class="n">capture</span><span class="p">(</span><span class="s2">&quot;cd </span><span class="si">#{</span><span class="n">release_path</span><span class="si">}</span><span class="s2">; ls -d */&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">chomp</span><span class="p">)</span>
+      <span class="k">if</span> <span class="nb">test</span> <span class="s2">&quot;[ -d </span><span class="si">#{</span><span class="n">old_project_dir</span><span class="si">}</span><span class="s2"> ]&quot;</span>
+        <span class="n">running_pid</span> <span class="o">=</span> <span class="n">capture</span><span class="p">(</span><span class="s2">&quot;cd </span><span class="si">#{</span><span class="n">old_project_dir</span><span class="si">}</span><span class="s2">; cat RUNNING_PID&quot;</span><span class="p">)</span>
+        <span class="n">execute</span> <span class="s2">&quot;kill </span><span class="si">#{</span><span class="n">running_pid</span><span class="si">}</span><span class="s2">&quot;</span>
+      <span class="k">end</span>
+    <span class="k">rescue</span> <span class="o">=&gt;</span> <span class="n">e</span>
+      <span class="n">info</span> <span class="s2">&quot;No previous release directory exists&quot;</span>
+    <span class="k">end</span>
+
+    <span class="k">unless</span> <span class="nb">test</span> <span class="s2">&quot;[ -d </span><span class="si">#{</span><span class="n">release_path</span><span class="si">}</span><span class="s2"> ]&quot;</span>
+      <span class="n">execute</span> <span class="s2">&quot;mkdir -p </span><span class="si">#{</span><span class="n">release_path</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">end</span>
+
+    <span class="n">upload!</span> <span class="n">archive_path</span><span class="p">,</span> <span class="n">release_path</span>
+
+    <span class="n">execute</span> <span class="s2">&quot;cd </span><span class="si">#{</span><span class="n">release_path</span><span class="si">}</span><span class="s2">; tar -zxvf </span><span class="si">#{</span><span class="n">archive_name</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="n">project_dir</span> <span class="o">=</span> <span class="no">File</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">release_path</span><span class="p">,</span> <span class="n">capture</span><span class="p">(</span><span class="s2">&quot;cd </span><span class="si">#{</span><span class="n">release_path</span><span class="si">}</span><span class="s2">; ls -d */&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">chomp</span><span class="p">)</span>
+
+    <span class="n">launch</span> <span class="o">=</span> <span class="n">capture</span><span class="p">(</span><span class="s2">&quot;cd </span><span class="si">#{</span><span class="n">project_dir</span><span class="si">}</span><span class="s2">; ls bin/*&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">chomp</span>
+
+    <span class="n">execute</span> <span class="s2">&quot;cd </span><span class="si">#{</span><span class="n">project_dir</span><span class="si">}</span><span class="s2">; ( ( nohup </span><span class="si">#{</span><span class="n">launch</span><span class="si">}</span><span class="s2"> &amp;&gt;/dev/null ) &amp; echo $! &gt; RUNNING_PID)&quot;</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div>
+
+<p>在on_roles块中加入了begin; ... ; rescue; ... end追加了块。</p>
+
+<p>这个里面只有当应用文件夹中的保存用进程ID的文件存在的时候才有效。</p>
+
+<h2>例子总结</h2>
+
+<p>上述的给出了大致的发布脚本的书写方法和流程。</p>
+
+<p>根据这个继续读下面的完成形态的脚本。</p>
+
+<h4>config/deploy/test.rb</h4>
+
+<div class="highlight"><pre><code class="text">作业对象服务器的设定
+</code></pre></div>
+
+<h4>config/deploy.rb</h4>
+
+<div class="highlight"><pre><code class="text">去除Capistrano默认任务
+任务 [代码获取]的定义
+任务 [build，压缩、打包]的定义
+任务 \[压缩包的build和安装\] [应用的启动和停止]的&gt;定义
+</code></pre></div>
+
+<h2>完成形态</h2>
+
+<p>到这里为止说明的使用DSL的示例如下</p>
+
+<p>使用叫做Finagle的框架，最简单的发布设定。</p>
+
+<p>利用Vagrant登录到虚拟机器上，在虚拟机上登录取得Finagle的源代码，然后build install start</p>
+
+<h3>config/deploy/test.rb</h3>
+
+<div class="highlight"><pre><code class="ruby"><span class="n">server</span> <span class="s1">&#39;localhost&#39;</span><span class="p">,</span> <span class="ss">user</span><span class="p">:</span> <span class="s1">&#39;vagrant&#39;</span><span class="p">,</span> <span class="ss">roles</span><span class="p">:</span> <span class="sx">%w{web}</span>
+</code></pre></div>
+
+<h3>config/deploy.rb</h3>
+
+<div class="highlight"><pre><code class="ruby"><span class="n">task</span> <span class="ss">:update</span> <span class="k">do</span>
+  <span class="n">run_locally</span> <span class="k">do</span>
+    <span class="n">application</span> <span class="o">=</span> <span class="n">fetch</span> <span class="ss">:application</span>
+    <span class="k">if</span> <span class="nb">test</span> <span class="s2">&quot;[ -d </span><span class="si">#{</span><span class="n">application</span><span class="si">}</span><span class="s2"> ]&quot;</span>
+      <span class="n">execute</span> <span class="s2">&quot;cd </span><span class="si">#{</span><span class="n">application</span><span class="si">}</span><span class="s2">; git pull&quot;</span>
+    <span class="k">else</span>
+      <span class="n">execute</span> <span class="s2">&quot;git clone </span><span class="si">#{</span><span class="n">fetch</span> <span class="ss">:repo_url</span><span class="si">}</span><span class="s2"> </span><span class="si">#{</span><span class="n">application</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="n">task</span> <span class="ss">:archive</span> <span class="o">=&gt;</span> <span class="ss">:update</span> <span class="k">do</span>
+  <span class="n">run_locally</span> <span class="k">do</span>
+    <span class="n">sbt_output</span> <span class="o">=</span> <span class="n">capture</span> <span class="s2">&quot;cd </span><span class="si">#{</span><span class="n">fetch</span> <span class="ss">:application</span><span class="si">}</span><span class="s2">; sbt pack-archive&quot;</span>
+
+    <span class="n">sbt_output_without_escape_sequences</span> <span class="o">=</span> <span class="n">sbt_output</span><span class="o">.</span><span class="n">lines</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span> <span class="o">|</span><span class="n">line</span><span class="o">|</span> <span class="n">line</span><span class="o">.</span><span class="n">gsub</span><span class="p">(</span><span class="sr">/\e\[\d{1,2}m/</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="p">}</span><span class="o">.</span><span class="n">join</span>
+
+    <span class="n">archive_relative_path</span> <span class="o">=</span> <span class="n">sbt_output_without_escape_sequences</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sr">/\[info\] Generating (?&lt;archive_path&gt;.+\.tar\.gz)\s*$/</span><span class="p">)</span><span class="o">[</span><span class="ss">:archive_path</span><span class="o">]</span>
+    <span class="n">archive_name</span> <span class="o">=</span> <span class="n">archive_relative_path</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sr">/(?&lt;archive_name&gt;[^\/]+\.tar\.gz)$/</span><span class="p">)</span><span class="o">[</span><span class="ss">:archive_name</span><span class="o">]</span>
+    <span class="n">archive_absolute_path</span> <span class="o">=</span> <span class="no">File</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">capture</span><span class="p">(</span><span class="s2">&quot;cd </span><span class="si">#{</span><span class="n">fetch</span><span class="p">(</span><span class="ss">:application</span><span class="p">)</span><span class="si">}</span><span class="s2">; pwd&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">chomp</span><span class="p">,</span> <span class="n">archive_relative_path</span><span class="p">)</span>
+
+    <span class="n">info</span> <span class="n">archive_absolute_path</span>
+    <span class="n">info</span> <span class="n">archive_name</span>
+
+    <span class="n">set</span> <span class="ss">:archive_absolute_path</span><span class="p">,</span> <span class="n">archive_absolute_path</span>
+    <span class="n">set</span> <span class="ss">:archive_name</span><span class="p">,</span> <span class="n">archive_name</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="n">task</span> <span class="ss">:deploy</span> <span class="o">=&gt;</span> <span class="ss">:archive</span> <span class="k">do</span>
+  <span class="n">archive_path</span> <span class="o">=</span> <span class="n">fetch</span> <span class="ss">:archive_absolute_path</span>
+  <span class="n">archive_name</span> <span class="o">=</span> <span class="n">fetch</span> <span class="ss">:archive_name</span>
+  <span class="n">release_path</span> <span class="o">=</span> <span class="no">File</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fetch</span><span class="p">(</span><span class="ss">:deploy_to</span><span class="p">),</span> <span class="n">fetch</span><span class="p">(</span><span class="ss">:application</span><span class="p">))</span>
+
+  <span class="n">on</span> <span class="n">roles</span><span class="p">(</span><span class="ss">:web</span><span class="p">)</span> <span class="k">do</span>
+    <span class="k">begin</span>
+      <span class="n">old_project_dir</span> <span class="o">=</span> <span class="no">File</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">release_path</span><span class="p">,</span> <span class="n">capture</span><span class="p">(</span><span class="s2">&quot;cd </span><span class="si">#{</span><span class="n">release_path</span><span class="si">}</span><span class="s2">; ls -d */&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">chomp</span><span class="p">)</span>
+      <span class="k">if</span> <span class="nb">test</span> <span class="s2">&quot;[ -d </span><span class="si">#{</span><span class="n">old_project_dir</span><span class="si">}</span><span class="s2"> ]&quot;</span>
+        <span class="n">running_pid</span> <span class="o">=</span> <span class="n">capture</span><span class="p">(</span><span class="s2">&quot;cd </span><span class="si">#{</span><span class="n">old_project_dir</span><span class="si">}</span><span class="s2">; cat RUNNING_PID&quot;</span><span class="p">)</span>
+        <span class="n">execute</span> <span class="s2">&quot;kill </span><span class="si">#{</span><span class="n">running_pid</span><span class="si">}</span><span class="s2">&quot;</span>
+      <span class="k">end</span>
+    <span class="k">rescue</span> <span class="o">=&gt;</span> <span class="n">e</span>
+      <span class="n">info</span> <span class="s2">&quot;No previous release directory exists&quot;</span>
+    <span class="k">end</span>
+    
+    <span class="k">unless</span> <span class="nb">test</span> <span class="s2">&quot;[ -d </span><span class="si">#{</span><span class="n">release_path</span><span class="si">}</span><span class="s2"> ]&quot;</span>
+      <span class="n">execute</span> <span class="s2">&quot;mkdir -p </span><span class="si">#{</span><span class="n">release_path</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">end</span>
+
+    <span class="n">upload!</span> <span class="n">archive_path</span><span class="p">,</span> <span class="n">release_path</span>
+
+    <span class="n">execute</span> <span class="s2">&quot;cd </span><span class="si">#{</span><span class="n">release_path</span><span class="si">}</span><span class="s2">; tar -zxvf </span><span class="si">#{</span><span class="n">archive_name</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="n">project_dir</span> <span class="o">=</span> <span class="no">File</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">release_path</span><span class="p">,</span> <span class="n">capture</span><span class="p">(</span><span class="s2">&quot;cd </span><span class="si">#{</span><span class="n">release_path</span><span class="si">}</span><span class="s2">; ls -d */&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">chomp</span><span class="p">)</span>
+
+    <span class="n">launch</span> <span class="o">=</span> <span class="n">capture</span><span class="p">(</span><span class="s2">&quot;cd </span><span class="si">#{</span><span class="n">project_dir</span><span class="si">}</span><span class="s2">; ls bin/*&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">chomp</span>
+
+    <span class="n">execute</span> <span class="s2">&quot;cd </span><span class="si">#{</span><span class="n">project_dir</span><span class="si">}</span><span class="s2">; ( ( nohup </span><span class="si">#{</span><span class="n">launch</span><span class="si">}</span><span class="s2"> &amp;&gt;/dev/null ) &amp; echo $! &gt; RUNNING_PID)&quot;</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div>
+
+<h2>Cap命令的执行</h2>
+
+<p>到这里为止完成的config/deploy/阶段名称.rb（这次的阶段名称是test）以及config/deploy.rb（定义了多个任务），利用这些执行Capistrano。</p>
+
+<p>执行Capistrano是采用没前面说过的cap命令。</p>
+
+<div class="highlight"><pre><code class="bash">cap <span class="nb">test </span>deploy
+</code></pre></div>
+
+<p>cap命令的第一个与config/deploy/test.rb的test对应，第二个参数是执行的任务名称，与task: deploy中的deploy对应。</p>
+
+<p>第一次运行的结果如下</p>
+
+<div class="highlight"><pre><code class="bash"><span class="nv">$ </span>cap <span class="nb">test </span>deploy
+<span class="nv">$ </span>cap <span class="nb">test </span>deploy
+<span class="o">[</span>deprecated<span class="o">]</span> I18n.enforce_available_locales will default to <span class="nb">true </span>in the future. If you really want to skip validation of your locale you can <span class="nb">set </span>I18n.enforce_available_locales <span class="o">=</span> <span class="nb">false </span>to avoid this message.
+DEBUG <span class="o">[</span>41eec63b<span class="o">]</span> Running /usr/bin/env <span class="o">[</span> -d finagle_sample_app <span class="o">]</span> on
+DEBUG <span class="o">[</span>41eec63b<span class="o">]</span> Command: <span class="o">[</span> -d finagle_sample_app <span class="o">]</span>
+DEBUG <span class="o">[</span>41eec63b<span class="o">]</span> Finished in 0.006 seconds with <span class="nb">exit </span>status 256 <span class="o">(</span>failed<span class="o">)</span>.
+ INFO <span class="o">[</span>752235f8<span class="o">]</span> Running /usr/bin/env git clone git@github.com:mumoshu/finagle_sample_app finagle_sample_app on
+DEBUG <span class="o">[</span>752235f8<span class="o">]</span> Command: git clone git@github.com:mumoshu/finagle_sample_app finagle_sample_app
+DEBUG <span class="o">[</span>752235f8<span class="o">]</span>        Cloning into <span class="s1">&#39;finagle_sample_app&#39;</span>...
+ INFO <span class="o">[</span>752235f8<span class="o">]</span> Finished in 2.827 seconds with <span class="nb">exit </span>status 0 <span class="o">(</span>successful<span class="o">)</span>.
+DEBUG <span class="o">[</span>262f8e15<span class="o">]</span> Running /usr/bin/env <span class="nb">cd </span>finagle_sample_app<span class="p">;</span> sbt pack-archive on
+DEBUG <span class="o">[</span>262f8e15<span class="o">]</span> Command: <span class="nb">cd </span>finagle_sample_app<span class="p">;</span> sbt pack-archive
+DEBUG <span class="o">[</span>262f8e15<span class="o">]</span>        <span class="o">[</span>info<span class="o">]</span> Generating target/finagle_sample_app-0.1-SNAPSHOT.tar.gz
+DEBUG <span class="o">[</span>262f8e15<span class="o">]</span>        <span class="o">[</span>success<span class="o">]</span> Total <span class="nb">time</span>: 4 s, completed Dec 20, 2013 3:47:11 PM
+DEBUG <span class="o">[</span>262f8e15<span class="o">]</span> Finished in 21.705 seconds with <span class="nb">exit </span>status 0 <span class="o">(</span>successful<span class="o">)</span>.
+DEBUG <span class="o">[</span>88b1fbff<span class="o">]</span> Running /usr/bin/env <span class="nb">cd </span>finagle_sample_app<span class="p">;</span> <span class="nb">pwd </span>on
+DEBUG <span class="o">[</span>88b1fbff<span class="o">]</span> Command: <span class="nb">cd </span>finagle_sample_app<span class="p">;</span> <span class="nb">pwd</span>
+DEBUG <span class="o">[</span>88b1fbff<span class="o">]</span>        /home/vagrant/cap-test/finagle_sample_app
+DEBUG <span class="o">[</span>88b1fbff<span class="o">]</span> Finished in 0.005 seconds with <span class="nb">exit </span>status 0 <span class="o">(</span>successful<span class="o">)</span>.
+ INFO /home/vagrant/cap-test/finagle_sample_app/target/finagle_sample_app-0.1-SNAPSHOT.tar.gz
+ INFO finagle_sample_app-0.1-SNAPSHOT.tar.gz
+DEBUG <span class="o">[</span>5ea6df07<span class="o">]</span> Running /usr/bin/env <span class="o">[</span> -d /opt/testapps/finagle_sample_app <span class="o">]</span> on localhost
+DEBUG <span class="o">[</span>5ea6df07<span class="o">]</span> Command: <span class="o">[</span> -d /opt/testapps/finagle_sample_app <span class="o">]</span>
+DEBUG <span class="o">[</span>5ea6df07<span class="o">]</span> Finished in 0.513 seconds with <span class="nb">exit </span>status 0 <span class="o">(</span>successful<span class="o">)</span>.
+DEBUG Uploading /home/vagrant/cap-test/finagle_sample_app/target/finagle_sample_app-0.1-SNAPSHOT.tar.gz 0.0%
+ INFO Uploading /home/vagrant/cap-test/finagle_sample_app/target/finagle_sample_app-0.1-SNAPSHOT.tar.gz 0.12%
+ INFO <span class="o">[</span>a7940994<span class="o">]</span> Running /usr/bin/env <span class="nb">cd</span> /opt/testapps/finagle_sample_app<span class="p">;</span> tar -zxvf finagle_sample_app-0.1-SNAPSHOT.tar.gz on localhost
+DEBUG <span class="o">[</span>a7940994<span class="o">]</span> Command: <span class="nb">cd</span> /opt/testapps/finagle_sample_app<span class="p">;</span> tar -zxvf finagle_sample_app-0.1-SNAPSHOT.tar.gz
+ INFO <span class="o">[</span>a7940994<span class="o">]</span> Finished in 0.259 seconds with <span class="nb">exit </span>status 0 <span class="o">(</span>successful<span class="o">)</span>.
+DEBUG <span class="o">[</span>b9d38bed<span class="o">]</span> Running /usr/bin/env <span class="nb">cd</span> /opt/testapps/finagle_sample_app<span class="p">;</span> ls -d */ on localhost
+DEBUG <span class="o">[</span>b9d38bed<span class="o">]</span> Command: <span class="nb">cd</span> /opt/testapps/finagle_sample_app<span class="p">;</span> ls -d */
+DEBUG <span class="o">[</span>b9d38bed<span class="o">]</span>        finagle_sample_app-0.1-SNAPSHOT/
+DEBUG <span class="o">[</span>b9d38bed<span class="o">]</span> Finished in 0.009 seconds with <span class="nb">exit </span>status 0 <span class="o">(</span>successful<span class="o">)</span>.
+DEBUG <span class="o">[</span>2978d17e<span class="o">]</span> Running /usr/bin/env <span class="nb">cd</span> /opt/testapps/finagle_sample_app/finagle_sample_app-0.1-SNAPSHOT/<span class="p">;</span> ls bin/* on localhost
+DEBUG <span class="o">[</span>2978d17e<span class="o">]</span> Command: <span class="nb">cd</span> /opt/testapps/finagle_sample_app/finagle_sample_app-0.1-SNAPSHOT/<span class="p">;</span> ls bin/*
+DEBUG <span class="o">[</span>2978d17e<span class="o">]</span>        bin/hello
+DEBUG <span class="o">[</span>2978d17e<span class="o">]</span> Finished in 0.009 seconds with <span class="nb">exit </span>status 0 <span class="o">(</span>successful<span class="o">)</span>.
+ INFO <span class="o">[</span>74987948<span class="o">]</span> Running /usr/bin/env <span class="nb">cd</span> /opt/testapps/finagle_sample_app/finagle_sample_app-0.1-SNAPSHOT/<span class="p">;</span> <span class="o">(</span> <span class="o">(</span> nohup bin/hello <span class="p">&amp;</span>&gt;/dev/null <span class="o">)</span> <span class="p">&amp;</span> <span class="nb">echo</span> <span class="nv">$!</span> &gt; RUNNING_PID<span class="o">)</span> on localhost
+DEBUG <span class="o">[</span>74987948<span class="o">]</span> Command: <span class="nb">cd</span> /opt/testapps/finagle_sample_app/finagle_sample_app-0.1-SNAPSHOT/<span class="p">;</span> <span class="o">(</span> <span class="o">(</span> nohup bin/hello <span class="p">&amp;</span>&gt;/dev/null <span class="o">)</span> <span class="p">&amp;</span> <span class="nb">echo</span> <span class="nv">$!</span> &gt; RUNNING_PID<span class="o">)</span>
+ INFO <span class="o">[</span>74987948<span class="o">]</span> Finished in 0.008 seconds with <span class="nb">exit </span>status 0 <span class="o">(</span>successful<span class="o">)</span>.
+</code></pre></div>
+
+<h2>服务器状态的确认</h2>
+
+<div class="highlight"><pre><code class="bash"><span class="nv">$ </span>ps aux <span class="p">|</span> grep finagle_sample_app
+vagrant   6908  1.2  0.8 4313964 70760 ?       Sl   15:47   0:05 /usr/lib/jvm/java-6-openjdk-amd64/bin/java -cp /opt/testapps/finagle_sample_app/finagle_sample_app-0.1-SNAPSHOT/lib/* -Dprog.home<span class="o">=</span>/opt/testapps/finagle_sample_app/finagle_sample_app-0.1-SNAPSHOT -Dprog.version<span class="o">=</span>0.1-SNAPSHOT myprog.Hello
+vagrant   6954  0.0  0.0   8112   948 pts/0    S+   15:54   0:00 grep --color<span class="o">=</span>auto finagle_sample_app
+</code></pre></div>
+
+<p>应用安好的通过ID为6908的进程启动起来。</p>
+
+<p>实际上与服务器通信试试</p>
+
+<div class="highlight"><pre><code class="bash"><span class="nv">$ </span>curl http://localhost:10000
+Hello Finagle!
+</code></pre></div>
+
+<p>再次运行脚本的时候，只是利用了上次的PID先杀掉进程在执行同样的任务而已。</p>
+
+<h2>又长又臭。。</h2>
+
+<p>这次简单的以Finagle为例说明了web应用的发布方法。</p>
+
+<p>注意到没有，实际上只是在runlocally和on的块中写入了shell命令。使用任意的命令就能完成各种任务。另外这次省略说明的是Capistrano里面能写任意的Ruby代码。</p>
+
+<h2>总结</h2>
+
+<ol>
+<li>手动deploy需要花费时间</li>
+<li>自动化需要学习的时间</li>
+<li>Capistrano能完成自动化任务</li>
+<li>为了减少Capistrano的学习时间，简单说明了Capistrano的基础</li>
+<li>举了个例子说明了应用的发布脚本</li>
+<li>根据这个例子，能完成各种各样的自动化任务。</li>
+</ol>
+
+<h2>其他</h2>
+
+<p>这次说明到Capistrano为止，今后将以以下为话题继续介绍：</p>
+
+<ol>
+<li>plugin的使用方法</li>
+<li>使用Play framework等实际的发布方法</li>
+<li>不停止的deploy(rolling deploy)</li>
+</ol>
+
+</div>
+
+<br>
+<h1><a href=https://github.com/fdwills/fdwills.github.io/issues/new>[click to comment]</a></h1>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                wills<br />
+                Engineer<br />
+                weirenzhong@gmail.com
+              </p>
+            </div>
+            <div class="contact">
+              <p>
+                <a href="https://github.com/fdwills">fdwills@github</a><br />
+              </p>
+            </div>
+          </div>
+        </div>
+
+    </body>
+</html>
