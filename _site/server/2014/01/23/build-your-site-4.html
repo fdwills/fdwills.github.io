@@ -25,7 +25,69 @@
 <p class="meta">23 Jan 2014</p>
 
 <div class="post">
-<p>[jenkins 暂定]</p>
+<p>因为代码采用github管理，并采用测试驱动开发模式。</p>
+
+<p>这里安装jenkins，旨在对github的pull-request进行Test，对pull-request的merger进行安全判定。</p>
+
+<p>后续用jenkins替代cron执行batch处理。</p>
+
+<p>jenkins的安装配置参考<a href="http://pkg.jenkins-ci.org/redhat/">这里</a></p>
+
+<h2>1. yum安装jenkins</h2>
+
+<div class="highlight"><pre><code class="bash"><span class="c"># 加入jenkins源</span>
+sudo wget -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins-ci.org/redhat/jenkins.rep
+sudo rpm --import http://pkg.jenkins-ci.org/redhat/jenkins-ci.org.key
+<span class="c"># 或将以上命令中redhat换成redhat-stable安装稳定版本</span>
+ 
+<span class="c"># 安装jenkins</span>
+sudu yum install jenkins
+ 
+<span class="c"># 安装java</span>
+sudo yum install java
+ 
+<span class="c"># centos, 从1.5升级为1.6</span>
+java -version
+sudo yum remove java
+sudo yum install jave-1.6.0-openjdk
+ 
+<span class="c"># 查看java版本，应为1.6</span>
+java -version
+ 
+<span class="c"># jenkins加入自启动</span>
+sudo chkconfig --add jenkins
+sudo chkconfig --level 35 jenkins on
+<span class="c"># 编辑iptables打开8080端口监听tcp请求</span>
+<span class="c"># 重启服务</span>
+sudo service iptables restart
+sudo service jenkins start
+</code></pre></div>
+
+<p>关于jenkins启动参数的修改，修改启动脚本（/etc/rc<em>.d/</em>*jenkins）的，或者查看设置启动脚本查看启动脚本中环境变量的名称(/etc/sysconfig/jenkins)。参数如下：</p>
+
+<div class="highlight"><pre><code class="text">--httpPort=$JENKINS_PORT
+--httpListenAddress=$JENKINS_LISTEN_ADDRESS
+--httpsPort=$JENKINS_HTTPS_PORT
+--httpsListenAddress=$JENKINS_HTTPS_LISTEN_ADDRESS
+--ajp13Port=$JENKINS_AJP_PORT
+--ajp13ListenAddress=$JENKINS_AJP_LISTEN_ADDRESS
+--debug=$JENKINS_DEBUG_LEVEL
+--handlerCountStartup=$JENKINS_HANDLER_STARTUP
+--handlerCountMax=$JENKINS_HANDLER_MAX
+--handlerCountMaxIdle=$JENKINS_HANDLER_IDLE
+</code></pre></div>
+
+<p>默认jenkinshome: /var/lib/jenkins</p>
+
+<p>默认Port：8080</p>
+
+<h2>2. 设置jenkins安全管理选项</h2>
+
+<p>参考<a href="https://wiki.jenkins-ci.org/display/JENKINS/Standard+Security+Setup">jenkinswiki</a>
+设置管理员用户与匿名用户
+安装Jenkins Github插件，便于自动化管理</p>
+
+<h2>3. 浏览器连接http://[host]:8080，出现jenkins画面，ok</h2>
 
 </div>
 
