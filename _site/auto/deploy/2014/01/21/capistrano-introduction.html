@@ -44,13 +44,16 @@
 
 <h2>对象</h2>
 
-<p>这片博客的对象是以下各位
-1. 想知道Capistrano的概要的各位
-2. 想学着使用Capistrano的各位
-3. 想将手工操作自动化的各位
-4. 已经通过其他工具实现了自动化</p>
+<p>这片博客的对象是以下各位</p>
 
-<p>以上述各位作为对象，读了这篇博客之后能取得不错的收获事本文的目标。
+<ol>
+<li>想知道Capistrano的概要的各位</li>
+<li>想学着使用Capistrano的各位</li>
+<li>想将手工操作自动化的各位</li>
+<li>已经通过其他工具实现了自动化</li>
+</ol>
+
+<p>以上述各位作为对象，读了这篇博客之后能取得不错的收获是本文的目标。
 （对于已经通过诸如Capistrano、Ansible、Fabic之类的工具实现了服务器操作自动化的各位，可能就没有什么新意了）</p>
 
 <h2>为什么deploy会花费大量的功夫</h2>
@@ -159,27 +162,36 @@
 
 <h2>首先要记住的是</h2>
 
-<p>粗分的话记住一下三个方面就够了
-1. Capistrano的模块
-2. Capistrano的工作流程
-3. Capistrano配置文件的书写方法</p>
+<p>粗分的话记住一下三个方面就够了</p>
+
+<ol>
+<li>Capistrano的模块</li>
+<li>Capistrano的工作流程</li>
+<li>Capistrano配置文件的书写方法</li>
+</ol>
 
 <h3>Capistrano模块</h3>
 
 <p>具体的代码和设定学习之前，如果能掌握Capistrano的根本的工作方式，从全局上理解Capistrano的话，学期里会轻松很多。这就是所谓的Capistrano模块。程序从文档开始，文章从目录开始读的话全局一了解理解起来就会很容易</p>
 
-<p>理解Capistrano的最低要求是一下的概念的理解
-1. Capistrano
-2. 库文件
-3. 配置文件
-4. host</p>
+<p>理解Capistrano的最低要求是一下的概念的理解</p>
+
+<ol>
+<li>Capistrano</li>
+<li>库文件</li>
+<li>配置文件</li>
+<li>host</li>
+</ol>
 
 <h4>Capistrano</h4>
 
-<p>Capistrano大致由以下三部分组成
-1. cap命令
-2. Capistrano的库文件
-3. 默认的deploy任务</p>
+<p>Capistrano大致由以下三部分组成</p>
+
+<ol>
+<li>cap命令</li>
+<li>Capistrano的库文件</li>
+<li>默认的deploy任务</li>
+</ol>
 
 <p>我们利用Capistrano的库文件和默认的deploy任务描述配置文件，然后通过cap命令执行。这样就能使Capistrano自动的进行一系列的操作。</p>
 
@@ -794,7 +806,6 @@ cap install
 <p>第一次运行的结果如下</p>
 
 <div class="highlight"><pre><code class="bash"><span class="nv">$ </span>cap <span class="nb">test </span>deploy
-<span class="nv">$ </span>cap <span class="nb">test </span>deploy
 <span class="o">[</span>deprecated<span class="o">]</span> I18n.enforce_available_locales will default to <span class="nb">true </span>in the future. If you really want to skip validation of your locale you can <span class="nb">set </span>I18n.enforce_available_locales <span class="o">=</span> <span class="nb">false </span>to avoid this message.
 DEBUG <span class="o">[</span>41eec63b<span class="o">]</span> Running /usr/bin/env <span class="o">[</span> -d finagle_sample_app <span class="o">]</span> on
 DEBUG <span class="o">[</span>41eec63b<span class="o">]</span> Command: <span class="o">[</span> -d finagle_sample_app <span class="o">]</span>
