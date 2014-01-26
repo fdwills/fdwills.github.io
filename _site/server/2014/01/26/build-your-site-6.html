@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>服务器建站笔记-博客应用</title>
+        <meta name="viewport" content="width=device-width">
+
+        <!-- syntax highlighting CSS -->
+        <link rel="stylesheet" href="/css/syntax.css">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="/css/main.css">
+
+    </head>
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">fdwills</a></h1>
+            <a class="extra" href="/">home</a>
+          </div>
+
+          <h2>服务器建站笔记-博客应用</h2>
+<p class="meta">26 Jan 2014</p>
+
+<div class="post">
+<p>本博客的自动Deploy任务建立。这个博客采用的<a href="http://jekyllrb.com/">jekyll</a>建立的，在github pages上能够发布的同时在自己的VPS上能够自动发布。</p>
+
+<p>Capistrano可以用来自动deploy，扥在Jenkins上运用有着诸多问题。如果在Capistano中不存储明文密码，就要解决ssh-key的问题。这个问题困惑了很久。</p>
+
+<p>但在这次实验中中，deploy的目标服务器与Jenkins服务器是同一个服务器，简单通过rsync就能解决deploy问题，但是这种设置需要一些很危险的设置。在理想情况下，还是以下的流程比较好：</p>
+
+<h3>方案1</h3>
+
+<ol>
+<li>代码中配置capistrno的production的deploy选项，采用github + ssh进行deploy</li>
+<li>git push到github</li>
+<li>github触动hook访问jenkins</li>
+<li>jenkins获取pull代码，检查deploy条件。比如是否master有修改，是否test通过等等。</li>
+<li>jenkins运行capistano的deploy任务</li>
+<li>capistano运行，ssh连接目标服务器从github上获取代码进行deploy</li>
+</ol>
+
+<p>这样的deploy可以自动进行deploy的版本控制，维持deploy记录，同时保存历次deploy的成果等等好处。
+但实际上这次的流程为(先安全的运行起来，有时间再去折腾方案1的可行性)：</p>
+
+<h3>方案2</h3>
+
+<ol>
+<li>git push到github</li>
+<li>github触动hook访问jenkins</li>
+<li>jenkins获取pull代码，检查deploy条件。比如是否master有修改，是否test通过等等。</li>
+<li>使用rsync与deploy目标文件夹进行本地同步</li>
+</ol>
+
+<h2>配置jenkins</h2>
+
+<p>参考<a href="/server/2014/01/24/build-your-site-5.html">这里</a>设置一个deploy的jenkins任务，deploy的条件是当master有改变的时候执行（这里暂无test）。</p>
+
+<p>deploy时的任务</p>
+
+<div class="highlight"><pre><code class="bash"><span class="c">#更新bundle</span>
+<span class="nv">$HOME</span>/.rbenv/shims/bundle install --path<span class="o">=</span>vendor/bundle
+
+<span class="c"># 编译jekyll到静态页面</span>
+<span class="nv">$HOME</span>/.rbenv/bin/rbenv <span class="nb">exec </span>jekyll build
+
+<span class="c">#将jenkins的工作目录同步到网站目录</span>
+sudo rsync -avr --delete --stats ./ /home/wills/app/fdwills.github.io/
+</code></pre></div>
+
+<p>同时需要配置的是jenkins的权限。jenkins发布时采用的是jenkins用户，需要对/home/wills/app/fdwills.github.io/有控制权限。于是在/etc/sudoers里面对jenkins用户打开权限</p>
+
+<div class="highlight"><pre><code class="bash"><span class="c"># 防止错误sudo: sorry, you must have a tty to run sudo的发生</span>
+<span class="c"># 注释掉以下</span>
+<span class="c"># Defaults    requiretty</span>
+
+Cmnd_Alias <span class="nv">BACKUP_TASK</span> <span class="o">=</span> /usr/bin/rsync, /usr/bin/ssh, /usr/bin/du
+
+jenkins <span class="nv">ALL</span><span class="o">=(</span>ALL<span class="o">)</span> NOPASSWD: BACKUP_TASK
+</code></pre></div>
+
+<p>ok, 到这里为止就可以了，然后需要做的就是完成jenkins与github之间的hook连接。</p>
+
+<p>Test一下，本地做修改后，反应到github之后，就通过jenkins自动编译发布到了远程服务器上。</p>
+
+</div>
+
+<br>
+<h3><a href=https://github.com/fdwills/fdwills.github.io/issues/new>[click to comment]</a></h3>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                wills<br />
+                Engineer<br />
+                weirenzhong@gmail.com
+              </p>
+            </div>
+            <div class="contact">
+              <p>
+                <a href="https://github.com/fdwills">fdwills@github</a><br />
+              </p>
+            </div>
+          </div>
+        </div>
+
+    </body>
+</html>
