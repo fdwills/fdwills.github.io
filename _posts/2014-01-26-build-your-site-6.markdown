@@ -11,7 +11,7 @@ Capistrano可以用来自动deploy，扥在Jenkins上运用有着诸多问题。
 
 但在这次实验中中，deploy的目标服务器与Jenkins服务器是同一个服务器，简单通过rsync就能解决deploy问题，但是这种设置需要一些很危险的设置。在理想情况下，还是以下的流程比较好：
 
-<h3>方案1</h3>
+### 方案1
 1. 代码中配置capistrno的production的deploy选项，采用github + ssh进行deploy
 2. git push到github
 3. github触动hook访问jenkins
@@ -22,16 +22,17 @@ Capistrano可以用来自动deploy，扥在Jenkins上运用有着诸多问题。
 这样的deploy可以自动进行deploy的版本控制，维持deploy记录，同时保存历次deploy的成果等等好处。
 但实际上这次的流程为(先安全的运行起来，有时间再去折腾方案1的可行性)：
 
-<h3>方案2</h3>
+### 方案2
 1. git push到github
 2. github触动hook访问jenkins
 3. jenkins获取pull代码，检查deploy条件。比如是否master有修改，是否test通过等等。
 4. 使用rsync与deploy目标文件夹进行本地同步
 
-<h2>配置jenkins</h2>
+###配置jenkins
 参考[这里][jenkins-setting]设置一个deploy的jenkins任务，deploy的条件是当master有改变的时候执行（这里暂无test）。
 
 deploy时的任务
+
 {%highlight bash%}
 #更新bundle
 $HOME/.rbenv/shims/bundle install --path=vendor/bundle
@@ -42,8 +43,8 @@ $HOME/.rbenv/bin/rbenv exec jekyll build
 #将jenkins的工作目录同步到网站目录
 sudo rsync -avr --delete --stats ./ /home/wills/app/fdwills.github.io/
 {%endhighlight%}
-
 同时需要配置的是jenkins的权限。jenkins发布时采用的是jenkins用户，需要对/home/wills/app/fdwills.github.io/有控制权限。于是在/etc/sudoers里面对jenkins用户打开权限
+
 {%highlight bash%}
 # 防止错误sudo: sorry, you must have a tty to run sudo的发生
 # 注释掉以下
