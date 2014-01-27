@@ -65,7 +65,28 @@ sudo service jenkins start
 参考[jenkinswiki][jenkins-wiki]
 设置管理员用户与匿名用户
 安装Jenkins Github插件，便于自动化管理
-
 <h2>3. 浏览器连接http://[host]:8080，出现jenkins画面，ok</h2>
+
+## 4. 通过apache代理jenkins请求
+  在开通子域名jenkins.fdwills.com，想通过apache代理关于jenkins的访问
+  现已经可以通过http://hostname:8080访问jenkins了
+
+查看http.conf中代理mod_proxy_http等模块已经安装并打开。
+在http.conf中的virtualhost设置中添加jenkins请求的转发配置
+
+{%highlight xml%}
+<VirtualHost *:80>
+   ServerName jenkins.fdwills.com
+   ProxyPass / http://127.0.0.1:8080/
+   ProxyPassReverse / http://127.0.0.1:8080/
+   ProxyRequests Off
+   <Proxy http://localhost:8080/*>
+     Order deny,allow
+     Allow from all
+   </Proxy>
+</VirtualHost>
+{%endhighlight%}
+
+
 [jenkins-link]: http://pkg.jenkins-ci.org/redhat/
 [jenkins-wiki]: https://wiki.jenkins-ci.org/display/JENKINS/Standard+Security+Setup
