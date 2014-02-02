@@ -1,0 +1,69 @@
+---
+layout: post
+title:  "试做rubygem-json rander"
+date:   2014-01-21 20:44:57
+categories: ruby
+tags: ruby rubygem json
+---
+# 任务
+最近在学习ruby。尝试做一个简单的gem上传至rubygem发布。
+
+在项目中的json，有需要对各种形式的json字符串做鲁棒性测试的需求。于是打算第一次做的gem是随机json式字符串的生成器：JsonRander
+
+## github生成代码仓库
+
+和其他代码仓库的生成方式一样，因为用于发布，所以自动生成选择MIT格式的licence
+
+## Gemfile
+
+应为采用gemspec的配置进行打包上传，随意编辑Gemfile如下并保存
+
+    source 'https://rubygems.org'
+    gemspec
+
+## gemspec文件
+
+gemspec文件中包含了模块文件的作者，版本等等信息。这次就编辑json_rander的gemspec如下。
+{%highlight ruby%}
+# -*- encoding: utf-8 -*-
+lib = File.expand_path(File.join(File.dirname(__FILE__),'lib/'))
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+
+require 'json_rander/version'
+
+Gem::Specification.new do |s|
+  s.name        = 'json_rander'
+  s.version     = JsonRander::VERSION
+  s.date        = '2014-01-28'
+  s.summary     = "generate random json string"
+  s.description = "generate random json string"
+  s.authors     = ["wills"]
+  s.email       = 'weirenzhong@gmail.com'
+  s.files       = `git ls-files`.split($/)
+  s.homepage    = 'https://github.com/fdwills/json_rander'
+  s.license     = 'MIT'
+end
+{%endhighlight%}
+这里列举的只是部分的gemspec的设置。gemspec文件中还能定义模块的依赖关系，可执行的文件（一般式执行rake任务）的位置等等。具体可以参考[gemspec][gemspec]
+
+## lib文件
+
+下面开始编写lib文件，lib/模块名.rb是模块的入口文件。gem安装的时候会将gem包下的lib放入ruby的load_path中，所以在代码中包含require '模块名.rb'就能使用新添加的ruby模块
+
+详细略，参考[源码][json-rander-github]
+
+## 打包上传
+打包
+    gem build json_rander.gemspec
+
+上传（先在rubygem网站建立自己的账号,确保模块名没有被占用）
+    gem push 模块名-版本.gem
+
+## 使用
+最后就可以在自己的项目的gemfile中加入以下来使用新模块中的类了
+    gem 'json_rander'
+
+
+[json-rander-github]: https://github.com/fdwills/json_rander
+[json-rander]: http://rubygems.org/gems/json_rander
+[gemspec]: http://docs.ruby-lang.org/ja/1.9.3/class/Gem=3a=3aSpecification.html
