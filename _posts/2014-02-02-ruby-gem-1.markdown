@@ -1,11 +1,10 @@
 ---
 layout: post
 title:  "试做rubygem-json rander"
-date:   2014-01-21 20:44:57
+date:   2014-02-22 20:44:57
 categories: ruby
 tags: ruby rubygem json
 ---
-# 任务
 最近在学习ruby。尝试做一个简单的gem上传至rubygem发布。
 
 在项目中的json，有需要对各种形式的json字符串做鲁棒性测试的需求。于是打算第一次做的gem是随机json式字符串的生成器：JsonRander
@@ -54,13 +53,16 @@ end
 
 ## 打包上传
 打包
+
     gem build json_rander.gemspec
 
 上传（先在rubygem网站建立自己的账号,确保模块名没有被占用）
+
     gem push 模块名-版本.gem
 
 ## 使用
 最后就可以在自己的项目的gemfile中加入以下来使用新模块中的类了
+
     gem 'json_rander'
 
 
