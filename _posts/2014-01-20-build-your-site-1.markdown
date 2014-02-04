@@ -2,7 +2,7 @@
 layout: post
 title:  "服务器建站笔记-初期设定"
 date:   2014-01-20 20:44:57
-categories: server
+categories: diary
 tags: 服务器 建站
 ---
 从日本域名服务商onamae上注册了fdwills的域名，开始准备建站。

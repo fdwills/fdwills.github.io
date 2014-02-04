@@ -2,7 +2,7 @@
 layout: post
 title:  "服务器建站笔记-Jenkins+Github配置"
 date:   2014-01-24 10:44:57
-categories: diary
+categories: album
 tags: 服务器 建站
 ---
 上一篇中安装了Jenkins

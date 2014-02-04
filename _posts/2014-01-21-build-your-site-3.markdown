@@ -2,7 +2,7 @@
 layout: post
 title:  "服务器建站笔记-应用安装"
 date:   2014-01-21 20:44:57
-categories: server
+categories: diary
 tags: 服务器 建站
 ---
 mysql+ruby+rails环境搭建

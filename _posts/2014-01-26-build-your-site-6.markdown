@@ -2,7 +2,7 @@
 layout: post
 title:  "服务器建站笔记-博客应用"
 date:   2014-01-26 10:44:57
-categories: server
+categories: diary
 tags: 服务器 建站
 ---
 本博客的自动Deploy任务建立。这个博客采用的[jekyll][jekyll]建立的，在github pages上能够发布的同时在自己的VPS上能够自动发布。

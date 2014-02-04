@@ -2,7 +2,7 @@
 layout: post
 title:  "服务器建站笔记-自动任务"
 date:   2014-01-23 20:44:57
-categories: server
+categories: diary
 tags: 服务器 建站
 ---
 因为代码采用github管理，并采用测试驱动开发模式。

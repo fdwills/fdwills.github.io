@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>服务器建站笔记-Jenkins+Github配置</title>
+        <meta name="viewport" content="width=device-width">
+
+        <!-- syntax highlighting CSS -->
+        <link rel="stylesheet" href="/css/syntax.css">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="/css/main.css">
+
+    </head>
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">fdwills</a></h1>
+            <a class="extra" href="/">home</a>
+            <a class="extra" href="/album.html">album</a>
+            <a class="extra" href="https://github.com/fdwills">github</a>
+          </div>
+
+          <h2>服务器建站笔记-Jenkins+Github配置</h2>
+<p class="meta">24 Jan 2014</p>
+
+<div class="post">
+<p>上一篇中安装了Jenkins</p>
+
+<p>这一篇中将要完成一下任务：</p>
+
+<p>1.github中创建代码仓库，自己的源码通过源码仓库管理</p>
+
+<p>2.Jenkins中建立设置任务，测试脚本</p>
+
+<p>3.github与Jenkins关联</p>
+
+<h2>1. 创建代码仓库</h2>
+
+<p>通过github创建一个初始repo</p>
+
+<p>本地操作代码</p>
+
+<div class="highlight"><pre><code class="bash"><span class="c"># 本地git操作</span>
+git init
+git remote origin <span class="o">[</span>github创建的repo<span class="o">]</span>
+git add .
+git commit -m<span class="s1">&#39;first init&#39;</span>
+git push
+ 
+<span class="c"># 如果push出现权限问题，请创建security key</span>
+sudo -u <span class="o">[</span>username<span class="o">]</span> -H ssh-keygen -t rsa -C hoge@gmail.com
+<span class="c"># 将创建出来的~/.ssh/id_rsa.pub的内容添加到github中个人的key列表中</span>
+</code></pre></div>
+
+<h2>2. jenkins建立自动任务对rails进行自动测试</h2>
+
+<ol>
+<li><p>Jenkins管理界面中安装github插件</p></li>
+<li><p>Jenkins中新建任务，并将在source code管理里面，选择git选项（需安装jenkins的github插件）</p></li>
+<li><p>将Repository URL设置成rails应用的repo地址（https的地址）</p></li>
+</ol>
+
+<p><img src="/assets/2014-01-24-8.48.43.png" alt="jenkins1"></p>
+
+<ol>
+<li><p>Branch Specifier里面输入**</p></li>
+<li><p>Build when a change is pushed to GitHub选中</p></li>
+</ol>
+
+<p><img src="/assets/2014-01-24-8.48.59.png" alt="jenkins2"></p>
+
+<ol>
+<li><p>设置将可用的.rbenv文件夹创建到JENKINS_HOME下的链接（因为在rails测试脚本中，需要用到.brenv管理下的命令）</p></li>
+<li><p>build选择shell脚本，脚本文件例</p></li>
+</ol>
+
+<div class="highlight"><pre><code class="bash"><span class="nv">$HOME</span>/.rbenv/shims/bundle install
+<span class="nv">RAILS_ENV</span><span class="o">=</span><span class="nb">test</span> <span class="nv">$HOME</span>/.rbenv/shims/bundle <span class="nb">exec </span>rake db:drop:all
+<span class="nv">RAILS_ENV</span><span class="o">=</span><span class="nb">test</span> <span class="nv">$HOME</span>/.rbenv/shims/bundle <span class="nb">exec </span>rake db:create:all
+<span class="nv">RAILS_ENV</span><span class="o">=</span><span class="nb">test</span> <span class="nv">$HOME</span>/.rbenv/shims/bundle <span class="nb">exec </span>rake db:migrate
+ 
+<span class="c"># 这里采用的测试框架是rspec。gemfile中加入rspec，并初始化rspec：</span>
+<span class="c"># bundle exec rails generate rspec:install</span>
+ 
+<span class="nv">COVERAGE</span><span class="o">=</span><span class="nb">true </span><span class="nv">JENKINS</span><span class="o">=</span><span class="nb">true</span> <span class="nv">$HOME</span>/.rbenv/shims/bundle <span class="nb">exec </span>rspec
+</code></pre></div>
+
+<p>其他默认即可。设置完成之后点击面板左边的build执行，就能看到jenkins在执行rails的test任务了</p>
+
+<p><img src="/assets/2014-01-24-8.48.59.png" alt="jenkins2">
+<h2>3. 关联github与jenkins</h2></p>
+
+<ol>
+<li>按照生产用户security key的方法生产jenkins专用key，并将key加入github的列表中(/var/lib/jenkins/.ssh/id_rsa.pub)</li>
+</ol>
+
+<div class="highlight"><pre><code class="bash">sudo -u jenkins -H ssh-keygen -t rsa -C hoge@gmail.com
+</code></pre></div>
+
+<ol>
+<li>登陆github，找到项目，在项目setting中选择ServiceHooks</li>
+</ol>
+
+<p>选择Jenkins (Github plugin)选项</p>
+
+<p>输入hook的URL，并激活</p>
+
+<p>http://hostname/github-webhook/</p>
+
+<p>TestHook</p>
+
+<ol>
+<li>测试：</li>
+</ol>
+
+<p>在本地修改代码，并通过git push到github，即会在jenkins面板上看到Jenkins把代码拿下来做测试了。</p>
+
+<p>如果测试结果没通过，请修改测试脚本</p>
+
+</div>
+
+<br>
+<h3><a href=https://github.com/fdwills/fdwills.github.io/issues/new>[click to comment]</a></h3>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                wills<br />
+                Engineer<br />
+                weirenzhong@gmail.com
+              </p>
+            </div>
+          </div>
+        </div>
+
+    </body>
+</html>

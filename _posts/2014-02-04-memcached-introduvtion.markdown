@@ -2,7 +2,7 @@
 layout: post
 title:  "【译】memcached介绍(1)"
 date:   2014-02-04 20:44:57
-categories: memcached
+categories: diary
 tags: apache memcached
 ---
 翻译来自日本某技术网站的入门级文章。[链接][memcached]

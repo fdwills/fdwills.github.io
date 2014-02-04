@@ -2,7 +2,7 @@
 layout: post
 title:  "【译】Capistrano介绍"
 date:   2014-01-21 20:44:57
-categories: auto deploy
+categories: diary
 tags: 自动化
 ---
 翻译来自GREE开发者博客上的文章。[链接][capistrano-link]
