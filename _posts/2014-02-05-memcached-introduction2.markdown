@@ -17,7 +17,9 @@ memcached默认采用Slab Allocator的机制管理内存。在这种机制出现
 
 看看Slab Allocator的结构。以下引用自memcached文档。
 
-    the primary goal of the slabs subsystem in memcached was to eliminate memory fragmentation issues totally by using fixed-size memory chunks coming from a few predetermined size classes.
+    the primary goal of the slabs subsystem in memcached was to eliminate memory
+    fragmentation issues totally by using fixed-size memory chunks coming from 
+    a few predetermined size classes.
 
 总之，Slab Allocation的根本是分配好的内存按照事先决定好的class size分成固定的长度的小块，内存碎片的问题就完全克服了。
 
@@ -56,7 +58,10 @@ memcached参照收到的数据的大小，在slab中选择一个最适合的一�
 
 虽然能完全解决这个问题的方案还不存在，但是在文档里面记载了一个效率的解决方案。
 
-    The most efficient way to reduce the waste is to use a list of size classes that closely matches (if that's at all possible) common sizes of objects that the clients of this particular installation of memcached are likely to store.
+    The most efficient way to reduce the waste is to use a list of size
+    classes that closely matches (if that's at all possible) common sizes
+    of objects that the clients of this particular installation of memcached
+    are likely to store.
 
 就是，提前解析客户端送来的数据的大小，或者存在用户的需求仅保存在正好大小的快中。根据这个大小使用适合的列表，能够抑制内存的浪费。
 
