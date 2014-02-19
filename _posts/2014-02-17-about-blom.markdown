@@ -33,11 +33,23 @@ blom是一个图片上传，组织成类似于ppt的东西然后公开阅览的�
 5. 图片的版本空中（应对resize的需求）
 6. 图片存储置于git管理之外（自动deploy的需求）
 
+### 什么须要cache什么不能cache
+
+* cache统一借口，统一管理？
+* 是否须要db conf table统一管理？
+
+### 是否对应移动端
+
+* 模板管理版本？
+* css版本控制？
+
 ### 有用的链接
 
+* [rails memcached][memcached]
 * [rails的手机端对应][cellphone]
 
 
-
+[memcached]: https://github.com/mperham/dalli
 [cellphone]: http://tobiascohen.com/articles/2012/07/01/creating-a-mobile-version-of-your-rails-site/
+
 

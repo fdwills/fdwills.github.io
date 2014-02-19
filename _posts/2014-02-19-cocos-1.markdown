@@ -1,0 +1,119 @@
+---
+layout: post
+title:  "cocos-2dx流程"
+date:   2014-02-19 10:44:57
+categories: diary
+tags: log
+---
+
+### AppController.mm
+
+#### application函数
+
+* 添加了
+
+    // cocos2d application instance
+    static AppDelegate s_sharedApplication;
+
+* 调用了cocos instance启动游戏
+
+    cocos2d::Application::getInstance()->run();
+
+#### 其它函数
+
+* applicationWillResignActive
+
+    instance->pause
+
+* applicationDidBecomeActive
+
+    instance->resume
+
+* applicationDidEnterBackground
+
+    instance->applicationDidEnterBackground
+
+* applicationWillEnterForeground
+
+    applicationWillEnterForeground
+
+### AppDelegate.cpp
+
+#### applicationDidFinishLaunching
+
+* 初始化导演类
+
+    auto director = Director::getInstance();
+
+* 初始化EGLview
+
+    auto eglView = EGLView::getInstance();
+
+* 设置导演类的opengiview
+
+    director->setOpenGLView(eglView);
+
+* 在游戏右下角显示FPS的刷帧状态（true）
+
+    director->setDisplayStats(true);
+
+* 设置刷帧频率（如果不设置默认每秒60帧）
+
+     director->setAnimationInterval(1.0 / 60);
+
+* 设置游戏启动的第一个场景
+
+    auto scene = HelloWorld::createScene();
+
+* 启动场景
+
+### HelloworldScene.h
+
+* createScene静态方法，供其他类初始化获取（如delegate）
+* init方法返回bool
+* CREATE\_FUNC(HelloWorld);宏自动生成create静态方法
+* 定义其他回调函数
+
+CREATE\_FUNC宏创建一个自动释放的场景类，大致代码
+
+    #define CREATE_FUNC(__TYPE__) \
+    static __TYPE__* create() \
+    { \
+        __TYPE__ *pRet = new __TYPE__(); \
+        if (pRet && pRet->init()) \
+        { \
+           pRet->autorelease(); \
+           return pRet; \
+         } \
+         else \
+         { \
+            delete pRet; \
+            pRet = NULL; \
+            return NULL; \
+          } \
+    }
+
+### HelloworldScene.cpp
+
+createScene --- create(CREATE\_FUNC) --- init
+
+#### createScene
+
+* autorelease object scene
+* autorelease object layer
+* scene.addChild(layer)
+
+#### init
+
+alot
+
+#### concept
+
+* 坐标系，右手坐标，左下(0,0)
+* Anchor Point（精灵防止基准，默认中心）
+setAnchorPoint(ccp(0, 0)) ccp(0.5, 0.5)
+
+    Director::sharedDirector()->getWinSize();
+    Size visibleSize = Director::getInstance()->getVisibleSize();
+    Point origin = Director::getInstance()->getVisibleOrigin();
+
