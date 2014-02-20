@@ -93,6 +93,18 @@ CREATE\_FUNC宏创建一个自动释放的场景类，大致代码
           } \
     }
 
+这里注意到create的函数里面在初始化之后调用了CCObject的autorelease方法，使得生成的instance加入到COCOS2d的内存管理机制当中(AutoreleasePool)，并且使得instance的retain和release方法生效。此时可以使用retain将对象保持，以及release将对象释放。create生成的对象，只有当调用了retain之后，才能且必须调用release方法。如果不调用在scene结束之后不能释放造成内存泄露。当instance被addChild到其他instance中是会自动调用retain方法声明被此对象所拥有直至此对象结束之后。所以只有当没有加入被addChild的成员变量才有必要被retain，所以可以再重定义虚构函数将成员变量主动release。release是将引用计数减1之后判断是否释放的功能能够。
+
+retain声明将对象暂时保持保证不被销毁。AutoreleasePool在运行每帧是扫描被内存中被管理的对象，不被需要时调用释放内存。尽量使用create生成对象而不是构造函数生成。通过构造函数new以及init出来的对象不会自动调用autoRelease方法，所以不会被内存管理机制管理到。
+
+1. 对象的生命周期和C++中的一样。
+2. new之后调用autorelease后，对象的生命周期就是当前帧（在绘制下一帧的时候，就会被销毁掉）
+3. 用对象的create方法，其实就是new之后调用autorelease的整合，对象的生命周期也是一帧；
+4. 如果想自己控制对象的生命周期，直接使用new，或者create方法后调用retain；
+5. 销毁对象用CCObject::release(void)；
+
+
+
 ### HelloworldScene.cpp
 
 createScene --- create(CREATE\_FUNC) --- init
