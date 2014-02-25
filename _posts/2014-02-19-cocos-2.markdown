@@ -2,7 +2,7 @@
 layout: post
 title:  "cocos-2dxmemo2"
 date:   2014-02-19 10:44:57
-categories: diary
+categories: draft
 tags: log
 ---
 

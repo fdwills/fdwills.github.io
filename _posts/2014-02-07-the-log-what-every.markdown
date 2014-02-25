@@ -2,7 +2,7 @@
 layout: post
 title:  "【译】The Log: What every software engineer should know about real-time data's unifying abstraction"
 date:   2014-02-05 20:44:57
-categories: diary
+categories: draft
 tags: log
 ---
 翻译来自Linked-in工程师的一篇文章。[链接][origin-link]
