@@ -2,7 +2,7 @@
 layout: post
 title:  "cocos-2dxメモリ管理"
 date:   2014-02-19 10:44:57
-categories: post
+categories: diary
 tag: cocos2dx
 ---
 cppで実現されたcoco2d-xのメモリについて、cppの言語自身動的なメモリを自動的に開放できない。
