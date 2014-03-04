@@ -103,6 +103,7 @@ retain声明将对象暂时保持保证不被销毁。AutoreleasePool在运行�
 4. 如果想自己控制对象的生命周期，直接使用new，或者create方法后调用retain；
 5. 销毁对象用CCObject::release(void)；
 
+(更贴切的解释参考下篇)
 
 
 ### HelloworldScene.cpp
