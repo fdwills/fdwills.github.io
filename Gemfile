@@ -1,3 +1,3 @@
 source 'https://rubygems.org'
 
-gem 'capistrano', '~> 3.0.1'
+gem 'hookspec', git: 'https://github.com/fdwills/hookspec'
