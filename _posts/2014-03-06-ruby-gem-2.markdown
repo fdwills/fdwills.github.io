@@ -1,0 +1,106 @@
+---
+layout: post
+title:  "试做rubygem-hookspec"
+date:   2014-03-06 20:44:57
+categories: diary
+tags: ruby rubygem hook
+---
+
+Rubygemを試してくみます。
+
+## 仮想案件
+
+specのようなhookを書く、git hookをspec化：hookspec
+
+### 要件
+
+* 初期化のために、bundle exec hookspec install みたいなコマンドがほしい
+* gitを簡単に操作できるために、GitEnvみたいなクラスがほしい
+* 簡単にtestできるために、specのmatcherを拡張する
+
+### gemspec内の設定
+
+````
+# -*- encoding: utf-8 -*-
+
+# 単純にHookSpecクラスのために
+lib = File.expand_path(File.join(File.dirname(__FILE__),'lib/'))
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+require 'hookspec/version'
+
+Gem::Specification.new do |s|
+  s.name        = 'hookspec'
+  s.version     = HookSpec::VERSION
+  s.date        = '2014-03-06'
+  s.summary     = "git hooks by spec"
+  s.description = "write git hooks like spec"
+  s.authors     = ["wills"]
+  s.email       = 'weirenzhong@gmail.com'
+  s.files       = `git ls-files`.split($/)
+  s.homepage    = 'https://github.com/fdwills/hookspec'
+  s.license     = 'MIT'
+
+  # lib/hookspecをexecutablesに入れる
+  s.executables << 'hookspec'
+
+  # 依頼関係を書く、rspecを強く依頼するので
+  s.add_runtime_dependency "rspec", ">= 2.13.0"
+  s.add_development_dependency "bundler", "~> 1.3"
+  s.add_development_dependency "rake"
+end
+````
+
+lib/はreqiureパスに入る、bin/下のファイルを導入と実行できるような仕組みですから、
+クラスはlib下に、コマンドはbin下に入れる。
+
+### bin/hookspec
+HookSpecを新規してrunする
+
+````
+#!/usr/bin/env ruby
+require 'hookspec/all'
+HookSpec::Application.new.run
+````
+
+### lib/hookspec.rb
+
+````
+require 'rspec'
+# すべてのrbを導入する
+require 'hookspec/all'
+````
+
+### GitEnvについて
+
+HookSpec::GitEnvクラスを作る、git操作を集約する。 lib/hookspec.rbにrequireする。
+
+### rspecを拡張について
+
+RSpec::Matchers.defineを利用して新しいmatcherを定義する。requireした後、新しいmatcherを使える。
+
+````
+# branch名をチェック
+require 'rspec'
+RSpec::Matchers.define :be_branch do |branch|
+  match do |git_env|
+    git_env.current_branch.eql?(branch)
+  end
+end
+````
+そうして、specに
+
+    expect(xxxx).to be_branch('master')
+
+みたいなことを書ける。
+
+### 配布
+
+    gem build hookspec.gemspec
+    gem push hookspec.1.0.0.gem
+
+### 参考ソース
+* rspec
+* serverspec
+* factory\_girl
+
+
