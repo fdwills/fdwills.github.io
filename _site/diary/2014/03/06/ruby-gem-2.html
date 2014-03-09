@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>试做rubygem-hookspec</title>
+        <meta name="viewport" content="width=device-width">
+
+        <!-- syntax highlighting CSS 
+        <link rel="stylesheet" href="/css/syntax.css">
+        -->
+        <link rel="stylesheet" href="/css/main.css">
+        <link rel="stylesheet" href="/css/carousel.css">
+        <link rel="stylesheet" href="/css/blog.css">
+    </head>
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">fdwills</a></h1>
+            <a class="extra" href="/">home</a>
+            <a class="extra" href="http://app.fdwills.com/visitor/users/1/home">album</a>
+            <a class="extra" href="https://github.com/fdwills">github</a>
+          </div>
+
+          <h2>试做rubygem-hookspec</h2>
+<p class="meta">06 Mar 2014</p>
+
+<div class="post">
+<p>Rubygemを試してくみます。</p>
+
+<h2>仮想案件</h2>
+
+<p>specのようなhookを書く、git hookをspec化：hookspec</p>
+
+<h3>要件</h3>
+
+<ul>
+<li>初期化のために、bundle exec hookspec install みたいなコマンドがほしい</li>
+<li>gitを簡単に操作できるために、GitEnvみたいなクラスがほしい</li>
+<li>簡単にtestできるために、specのmatcherを拡張する</li>
+</ul>
+
+<h3>gemspec内の設定</h3>
+<div class="highlight"><pre><code class="text language-text" data-lang="text"># -*- encoding: utf-8 -*-
+
+# 単純にHookSpecクラスのために
+lib = File.expand_path(File.join(File.dirname(__FILE__),&#39;lib/&#39;))
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+require &#39;hookspec/version&#39;
+
+Gem::Specification.new do |s|
+  s.name        = &#39;hookspec&#39;
+  s.version     = HookSpec::VERSION
+  s.date        = &#39;2014-03-06&#39;
+  s.summary     = &quot;git hooks by spec&quot;
+  s.description = &quot;write git hooks like spec&quot;
+  s.authors     = [&quot;wills&quot;]
+  s.email       = &#39;weirenzhong@gmail.com&#39;
+  s.files       = `git ls-files`.split($/)
+  s.homepage    = &#39;https://github.com/fdwills/hookspec&#39;
+  s.license     = &#39;MIT&#39;
+
+  # lib/hookspecをexecutablesに入れる
+  s.executables &lt;&lt; &#39;hookspec&#39;
+
+  # 依頼関係を書く、rspecを強く依頼するので
+  s.add_runtime_dependency &quot;rspec&quot;, &quot;&gt;= 2.13.0&quot;
+  s.add_development_dependency &quot;bundler&quot;, &quot;~&gt; 1.3&quot;
+  s.add_development_dependency &quot;rake&quot;
+end
+</code></pre></div>
+<p>lib/はreqiureパスに入る、bin/下のファイルを導入と実行できるような仕組みですから、
+クラスはlib下に、コマンドはbin下に入れる。</p>
+
+<h3>bin/hookspec</h3>
+
+<p>HookSpecを新規してrunする</p>
+<div class="highlight"><pre><code class="text language-text" data-lang="text">#!/usr/bin/env ruby
+require &#39;hookspec/all&#39;
+HookSpec::Application.new.run
+</code></pre></div>
+<h3>lib/hookspec.rb</h3>
+<div class="highlight"><pre><code class="text language-text" data-lang="text">require &#39;rspec&#39;
+# すべてのrbを導入する
+require &#39;hookspec/all&#39;
+</code></pre></div>
+<h3>GitEnvについて</h3>
+
+<p>HookSpec::GitEnvクラスを作る、git操作を集約する。 lib/hookspec.rbにrequireする。</p>
+
+<h3>rspecを拡張について</h3>
+
+<p>RSpec::Matchers.defineを利用して新しいmatcherを定義する。requireした後、新しいmatcherを使える。</p>
+<div class="highlight"><pre><code class="text language-text" data-lang="text"># branch名をチェック
+require &#39;rspec&#39;
+RSpec::Matchers.define :be_branch do |branch|
+  match do |git_env|
+    git_env.current_branch.eql?(branch)
+  end
+end
+</code></pre></div>
+<p>そうして、specに</p>
+<div class="highlight"><pre><code class="text language-text" data-lang="text">expect(xxxx).to be_branch(&#39;master&#39;)
+</code></pre></div>
+<p>みたいなことを書ける。</p>
+
+<h3>配布</h3>
+<div class="highlight"><pre><code class="text language-text" data-lang="text">gem build hookspec.gemspec
+gem push hookspec.1.0.0.gem
+</code></pre></div>
+<h3>参考ソース</h3>
+
+<ul>
+<li>rspec</li>
+<li>serverspec</li>
+<li>factory_girl</li>
+</ul>
+
+</div>
+
+<br>
+<h3><a href=https://github.com/fdwills/fdwills.github.io/issues/new>[click to comment]</a></h3>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                wills<br />
+                Engineer<br />
+                weirenzhong@gmail.com
+              </p>
+            </div>
+          </div>
+        </div>
+
+    </body>
+</html>

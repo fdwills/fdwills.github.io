@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>rails网络应用blom开发笔记</title>
+        <meta name="viewport" content="width=device-width">
+
+        <!-- syntax highlighting CSS 
+        <link rel="stylesheet" href="/css/syntax.css">
+        -->
+        <link rel="stylesheet" href="/css/main.css">
+        <link rel="stylesheet" href="/css/carousel.css">
+        <link rel="stylesheet" href="/css/blog.css">
+    </head>
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">fdwills</a></h1>
+            <a class="extra" href="/">home</a>
+            <a class="extra" href="http://app.fdwills.com/visitor/users/1/home">album</a>
+            <a class="extra" href="https://github.com/fdwills">github</a>
+          </div>
+
+          <h2>rails网络应用blom开发笔记</h2>
+<p class="meta">17 Feb 2014</p>
+
+<div class="post">
+<p>blom是一个图片上传，组织成类似于ppt的东西然后公开阅览的简单程序。</p>
+
+<ul>
+<li>图片管理：图片的上传，修改，删除</li>
+<li>文章管理：创建，修改，删除，添加图片</li>
+</ul>
+
+<h2>需要考虑清楚的部分</h2>
+
+<h3>权限管理</h3>
+
+<ol>
+<li>非登陆用户的权限</li>
+<li>登陆用户对自己的文件的权限</li>
+<li>登陆用户对他人的文件的权限</li>
+<li>管理员权限</li>
+</ol>
+
+<ul>
+<li>不同用户通过不同namespace的controller控制</li>
+<li>同一资源的访问提供不同的链接（为了controller的管理）</li>
+<li>同一资源访访问提供不同的模板（为了简化模板中的if-else逻辑）</li>
+</ul>
+
+<h3>图片上传文件管理</h3>
+
+<ol>
+<li>不同用户之间的文件访问不会冲突（存储文件规则）</li>
+<li>相同用户同一文件名的文件不会冲突（命名规则）</li>
+<li>用户删除图片后与文章关系的删除（防止空链接）</li>
+<li>用户删除文章后图片的不删除（防止影响其他文章）</li>
+<li>图片的版本空中（应对resize的需求）</li>
+<li>图片存储置于git管理之外（自动deploy的需求）</li>
+</ol>
+
+<h3>什么须要cache什么不能cache</h3>
+
+<ul>
+<li>cache统一借口，统一管理？</li>
+<li>是否须要db conf table统一管理？</li>
+</ul>
+
+<h3>是否对应移动端</h3>
+
+<ul>
+<li>模板管理版本？</li>
+<li>css版本控制？</li>
+</ul>
+
+<h3>有用的链接</h3>
+
+<ul>
+<li><a href="https://github.com/mperham/dalli">rails memcached</a></li>
+<li><a href="http://tobiascohen.com/articles/2012/07/01/creating-a-mobile-version-of-your-rails-site/">rails的手机端对应</a></li>
+</ul>
+
+</div>
+
+<br>
+<h3><a href=https://github.com/fdwills/fdwills.github.io/issues/new>[click to comment]</a></h3>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                wills<br />
+                Engineer<br />
+                weirenzhong@gmail.com
+              </p>
+            </div>
+          </div>
+        </div>
+
+    </body>
+</html>

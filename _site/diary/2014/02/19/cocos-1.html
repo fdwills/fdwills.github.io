@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>cocos-2dx流程</title>
+        <meta name="viewport" content="width=device-width">
+
+        <!-- syntax highlighting CSS 
+        <link rel="stylesheet" href="/css/syntax.css">
+        -->
+        <link rel="stylesheet" href="/css/main.css">
+        <link rel="stylesheet" href="/css/carousel.css">
+        <link rel="stylesheet" href="/css/blog.css">
+    </head>
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">fdwills</a></h1>
+            <a class="extra" href="/">home</a>
+            <a class="extra" href="http://app.fdwills.com/visitor/users/1/home">album</a>
+            <a class="extra" href="https://github.com/fdwills">github</a>
+          </div>
+
+          <h2>cocos-2dx流程</h2>
+<p class="meta">19 Feb 2014</p>
+
+<div class="post">
+<h3>AppController.mm</h3>
+
+<h4>application函数</h4>
+
+<ul>
+<li><p>添加了</p>
+
+<p>// cocos2d application instance
+static AppDelegate s_sharedApplication;</p></li>
+<li><p>调用了cocos instance启动游戏</p>
+
+<p>cocos2d::Application::getInstance()-&gt;run();</p></li>
+</ul>
+
+<h4>其它函数</h4>
+
+<ul>
+<li><p>applicationWillResignActive</p>
+
+<p>instance-&gt;pause</p></li>
+<li><p>applicationDidBecomeActive</p>
+
+<p>instance-&gt;resume</p></li>
+<li><p>applicationDidEnterBackground</p>
+
+<p>instance-&gt;applicationDidEnterBackground</p></li>
+<li><p>applicationWillEnterForeground</p>
+
+<p>applicationWillEnterForeground</p></li>
+</ul>
+
+<h3>AppDelegate.cpp</h3>
+
+<h4>applicationDidFinishLaunching</h4>
+
+<ul>
+<li><p>初始化导演类</p>
+
+<p>auto director = Director::getInstance();</p></li>
+<li><p>初始化EGLview</p>
+
+<p>auto eglView = EGLView::getInstance();</p></li>
+<li><p>设置导演类的opengiview</p>
+
+<p>director-&gt;setOpenGLView(eglView);</p></li>
+<li><p>在游戏右下角显示FPS的刷帧状态（true）</p>
+
+<p>director-&gt;setDisplayStats(true);</p></li>
+<li><p>设置刷帧频率（如果不设置默认每秒60帧）</p>
+
+<p>director-&gt;setAnimationInterval(1.0 / 60);</p></li>
+<li><p>设置游戏启动的第一个场景</p>
+
+<p>auto scene = HelloWorld::createScene();</p></li>
+<li><p>启动场景</p></li>
+</ul>
+
+<h3>HelloworldScene.h</h3>
+
+<ul>
+<li>createScene静态方法，供其他类初始化获取（如delegate）</li>
+<li>init方法返回bool</li>
+<li>CREATE_FUNC(HelloWorld);宏自动生成create静态方法</li>
+<li>定义其他回调函数</li>
+</ul>
+
+<p>CREATE_FUNC宏创建一个自动释放的场景类，大致代码</p>
+<div class="highlight"><pre><code class="text language-text" data-lang="text">#define CREATE_FUNC(__TYPE__) \
+static __TYPE__* create() \
+{ \
+    __TYPE__ *pRet = new __TYPE__(); \
+    if (pRet &amp;&amp; pRet-&gt;init()) \
+    { \
+       pRet-&gt;autorelease(); \
+       return pRet; \
+     } \
+     else \
+     { \
+        delete pRet; \
+        pRet = NULL; \
+        return NULL; \
+      } \
+}
+</code></pre></div>
+<p>这里注意到create的函数里面在初始化之后调用了CCObject的autorelease方法，使得生成的instance加入到COCOS2d的内存管理机制当中(AutoreleasePool)，并且使得instance的retain和release方法生效。此时可以使用retain将对象保持，以及release将对象释放。create生成的对象，只有当调用了retain之后，才能且必须调用release方法。如果不调用在scene结束之后不能释放造成内存泄露。当instance被addChild到其他instance中是会自动调用retain方法声明被此对象所拥有直至此对象结束之后。所以只有当没有加入被addChild的成员变量才有必要被retain，所以可以再重定义虚构函数将成员变量主动release。release是将引用计数减1之后判断是否释放的功能能够。</p>
+
+<p>retain声明将对象暂时保持保证不被销毁。AutoreleasePool在运行每帧是扫描被内存中被管理的对象，不被需要时调用释放内存。尽量使用create生成对象而不是构造函数生成。通过构造函数new以及init出来的对象不会自动调用autoRelease方法，所以不会被内存管理机制管理到。</p>
+
+<ol>
+<li>对象的生命周期和C++中的一样。</li>
+<li>new之后调用autorelease后，对象的生命周期就是当前帧（在绘制下一帧的时候，就会被销毁掉）</li>
+<li>用对象的create方法，其实就是new之后调用autorelease的整合，对象的生命周期也是一帧；</li>
+<li>如果想自己控制对象的生命周期，直接使用new，或者create方法后调用retain；</li>
+<li>销毁对象用CCObject::release(void)；</li>
+</ol>
+
+<p>(更贴切的解释参考下篇)</p>
+
+<h3>HelloworldScene.cpp</h3>
+
+<p>createScene --- create(CREATE_FUNC) --- init</p>
+
+<h4>createScene</h4>
+
+<ul>
+<li>autorelease object scene</li>
+<li>autorelease object layer</li>
+<li>scene.addChild(layer)</li>
+</ul>
+
+<h4>init</h4>
+
+<p>alot</p>
+
+<h4>concept</h4>
+
+<ul>
+<li>坐标系，右手坐标，左下(0,0)</li>
+<li><p>Anchor Point（精灵防止基准，默认中心）
+setAnchorPoint(ccp(0, 0)) ccp(0.5, 0.5)</p>
+
+<p>Director::sharedDirector()-&gt;getWinSize();
+Size visibleSize = Director::getInstance()-&gt;getVisibleSize();
+Point origin = Director::getInstance()-&gt;getVisibleOrigin();</p></li>
+</ul>
+
+</div>
+
+<br>
+<h3><a href=https://github.com/fdwills/fdwills.github.io/issues/new>[click to comment]</a></h3>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                wills<br />
+                Engineer<br />
+                weirenzhong@gmail.com
+              </p>
+            </div>
+          </div>
+        </div>
+
+    </body>
+</html>

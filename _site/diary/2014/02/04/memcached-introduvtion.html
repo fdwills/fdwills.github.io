@@ -3,15 +3,15 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-        <title>【译】memcached介绍</title>
+        <title>【译】memcached介绍(1)</title>
         <meta name="viewport" content="width=device-width">
 
-        <!-- syntax highlighting CSS -->
+        <!-- syntax highlighting CSS 
         <link rel="stylesheet" href="/css/syntax.css">
-
-        <!-- Custom CSS -->
+        -->
         <link rel="stylesheet" href="/css/main.css">
-
+        <link rel="stylesheet" href="/css/carousel.css">
+        <link rel="stylesheet" href="/css/blog.css">
     </head>
     <body>
 
@@ -19,17 +19,302 @@
           <div class="header">
             <h1 class="title"><a href="/">fdwills</a></h1>
             <a class="extra" href="/">home</a>
-            <a class="extra" href="/album.html">album</a>
+            <a class="extra" href="http://app.fdwills.com/visitor/users/1/home">album</a>
             <a class="extra" href="https://github.com/fdwills">github</a>
           </div>
 
-          <h2>【译】memcached介绍</h2>
+          <h2>【译】memcached介绍(1)</h2>
 <p class="meta">04 Feb 2014</p>
 
 <div class="post">
 <p>翻译来自日本某技术网站的入门级文章。<a href="http://gihyo.jp/dev/feature/01/memcached/0001">链接</a></p>
 
 <p>译者水平有限翻译如有误请指出。</p>
+
+<p>memcached是曾经运营LiveJournal的Danga Interactive公司，以Brad Fitzpatrick为中心开发的软件。现在在mixi，facebook，Vox，LiveJournal等各种网络应用中在提升性能方面起着重要的作用。</p>
+
+<p>大多数的网络应用的数据存储在关系数据库上(RDBMS)。这些应用从数据库中读取数据表示在浏览器等上面。但是数据量增大的时候，访问一旦集中，RDBMS的负荷就会增大，数据库响应就会变慢。网络应用的表示就会受到延迟等很大影响。</p>
+
+<p>memcached就活跃在这块领域。memcached是高性能的分散缓存服务器。通常数据库的访问会被缓存一段时间，对数据库的访问回数就会减少，动态的使网络服务高速化。</p>
+
+<p><img src="/assets/TH400_0001-01.png" alt="1"></p>
+
+<h2>memcached的特征</h2>
+
+<p>memcached是非常高性能的分散缓存服务器，具有以下特征：</p>
+
+<ol>
+<li>简单的协议</li>
+<li>通过libevent处理事件</li>
+<li>内置的内存存储</li>
+<li>采用在memcached之间不进行通信的分散方式</li>
+</ol>
+
+<h3>简单的协议</h3>
+
+<p>memcached的服务器与客户端之间的通信不采用XML等复杂的格式，采用基于行的简单的协议进行。因为是基于行的协议，能够通过telnet方式存取memcached的数据。下面是例子：</p>
+<div class="highlight"><pre><code class="text language-text" data-lang="text">$ telnet localhost 11211
+Trying 127.0.0.1...
+Connected to localhost.localdomain (127.0.0.1).
+Escape character is &#39;^]&#39;.
+set foo 0 0 3     （保存的命令）
+bar               （数据）
+STORED            （结果）
+get foo           （获取命令）
+VALUE foo 0 3     （数据）
+bar               （数据）
+</code></pre></div>
+<p>协议相关内容在memcached的源码里面有，参考<a href="http://code.sixapart.com/svn/memcached/trunk/server/doc/protocol.txt">这里</a></p>
+
+<h3>通过libevent处理事件</h3>
+
+<p>libevent是不管Linux还是epoll,BSD系列的OS还是kqueue等的时间处理机制，是对于服务器连接增加之后仍然能够以O(1)的性能发挥作用的共同功能使用的库。memcached里面采用了libevent的库，所以能够在Linux,BSD,Solaris等系统上发挥作用。事件处理机制在这里不详说明，参考以下：</p>
+
+<ol>
+<li><a href="http://www.monkey.org/%7Eprovos/libevent/">libevent</a></li>
+<li><a href="http://www.kegel.com/c10k.html">The C10K problem</a></li>
+</ol>
+
+<h3>内置的内存存储</h3>
+
+<p>保存在memcached里面的数据使用能够提升性能的内置内存存储方式存储。数据全部保存在内存上，所以当memcached或者OS重启的时候所有的数据都会消失。另外，如果到达了指定的内存利用上线的时候，基于LRU(Least Recently Used)原则自动删除缓存。因为为了使memcached本身拥有缓存功能，所以设计的时候几乎不考虑数据的持久化。</p>
+
+<h3>采用在memcached之间不进行通信的分散方式</h3>
+
+<p>虽然说memcached是分散的缓存服务器，但是与分散相关的功能却没有在服务器侧实现。memcached之间不能通过通信进行信息共享。怎样分散全部依赖于客户端的实现。</p>
+
+<p><img src="/assets/TH400_0001-02.png" alt="2"></p>
+
+<h2>memcached的导入</h2>
+
+<p>memcached的导入比较简单，这里对安装做说明。</p>
+
+<p>memcached在一下的平台上理论上能够运作</p>
+
+<ul>
+<li>Linux</li>
+<li>FreeBSD</li>
+<li>Solrais(memcached 1.2.5以上版本)</li>
+<li>Mac OS X</li>
+</ul>
+
+<p>另外也能安装在Windows上，这里利用Fedora8进行说明</p>
+
+<h3>memcached的安装</h3>
+
+<p>memcached的运行需要之前介绍的libevent。Fedora8上rpm已经有安装包，利用yum进行安装</p>
+<div class="highlight"><pre><code class="text language-text" data-lang="text">sudo yum install libevent libevent-devel
+</code></pre></div>
+<p>memcached的云马在memcached的官网可以下载<a href="http://memcached.org/">连接</a>。Fedora8上有rpm包，这次不利用yum安装。</p>
+
+<p>memcached与一般的软件相同，configure, make, make install就能安装完毕。</p>
+
+<div class="highlight"><pre><code class="bash">    wget http://www.memcached.org/files/memcached-1.4.17.tar.gz
+    tar zxf memcached-1.4.17.tar.gz
+    <span class="nb">cd </span>memcached-1.4.17
+    ./configure
+    make
+    sudo make install
+</code></pre></div>
+
+<p>memcached被安装在/usr/local/bin下面</p>
+
+<h3>memcached的启动</h3>
+
+<p>终端上执行命令就能启动memcached</p>
+<div class="highlight"><pre><code class="text language-text" data-lang="text">$ /usr/local/bin/memcached -p 11211 -m 64m -vv
+slab class   1: chunk size     88 perslab 11915
+slab class   2: chunk size    112 perslab  9362
+slab class   3: chunk size    144 perslab  7281
+....
+slab class  38: chunk size 391224 perslab     2
+slab class  39: chunk size 489032 perslab     2
+&lt;23 server listening
+&lt;24 send buffer was 110592, now 268435456
+&lt;24 server listening (udp)
+&lt;24 server listening (udp)
+&lt;24 server listening (udp)
+&lt;24 server listening (udp)
+</code></pre></div>
+<p>debug的信息出来了，这样就能利用TCP的11211端口坚挺，最大利用的内存位64m的memcached在前端启动起来了。</p>
+
+<p>想让memcached作为demon启动的话运行以下</p>
+<div class="highlight"><pre><code class="text language-text" data-lang="text">$ /usr/local/bin/memcached -p 11211 -m 64m -d
+</code></pre></div>
+<p>这里利用的memcached的启动选项的说明如下：</p>
+
+<table>
+<tr>
+  <th>选项</th>
+  <th>说明</th>
+</tr>
+<tr>
+  <td>-p</td>
+  <td>利用的TCP端口号，默认是11211</td>
+</tr>
+<tr>
+  <td>-m</td>
+  <td>最大利用的内存容量，默认是64</td>
+</tr>
+<tr>
+  <td>-vv</td>
+  <td>very verbose模式启动，debug信息和error信息在终端显示出来</td>
+</tr>
+<tr>
+  <td>-d</td>
+  <td>将memcached作为demon在后台运行</td>
+</tr>
+</table>
+
+<p>常用到的启动选项是上面4个，另外一些选线，参考帮助文档</p>
+<div class="highlight"><pre><code class="text language-text" data-lang="text">/usr/local/bin/memcached -h
+</code></pre></div>
+<h3>客户端利用库文件连接</h3>
+
+<p>与memcached进行连接的客户端API库，从perl和php开始，已经用各种语言实现。以下是官网记载的支持的语言：</p>
+
+<ul>
+<li>Perl</li>
+<li>PHP</li>
+<li>Python</li>
+<li>Ruby</li>
+<li>C#</li>
+<li>C/C++</li>
+<li>Lua</li>
+</ul>
+
+<p><a href="https://code.google.com/p/memcached/wiki/Clients">客户端API下载地址</a></p>
+
+<p>这里利用perl的API库对memcached的连接做介绍</p>
+
+<h2>Cache::Memcached的利用</h2>
+
+<p>Perl的memcached库文件有以下在CPAN发布</p>
+
+<ul>
+<li>Cache::Memcached</li>
+<li>Cache::Memcached::Fast</li>
+<li>Cache::Memcached::libmemcached</li>
+</ul>
+
+<p>这里利用memcached的开发者Brad Fitzpatrick写的Cache::Memcached作介绍。</p>
+
+<p><a href="http://search.cpan.org/dist/Cache-Memcached/">Cache::Memcached - search.cpan.org</a></p>
+
+<h3>利用Cache::Memcached连接memcached</h3>
+
+<p>下面的代码是利用Cache::Memcached连接memcached的例子</p>
+
+<div class="highlight"><pre><code class="perl">    <span class="c1">#!/usr/bin/perl</span>
+
+    <span class="k">use</span> <span class="n">strict</span><span class="p">;</span>
+    <span class="k">use</span> <span class="n">warnings</span><span class="p">;</span>
+    <span class="k">use</span> <span class="nn">Cache::</span><span class="n">Memcached</span><span class="p">;</span>
+
+    <span class="k">my</span> <span class="nv">$key</span> <span class="o">=</span> <span class="s">&quot;foo&quot;</span><span class="p">;</span>
+    <span class="k">my</span> <span class="nv">$value</span> <span class="o">=</span> <span class="s">&quot;bar&quot;</span><span class="p">;</span>
+    <span class="k">my</span> <span class="nv">$expires</span> <span class="o">=</span> <span class="mi">3600</span><span class="p">;</span> <span class="c1"># 1 hour</span>
+    <span class="k">my</span> <span class="nv">$memcached</span> <span class="o">=</span> <span class="nn">Cache::</span><span class="n">Memcached</span><span class="o">-&gt;</span><span class="k">new</span><span class="p">({</span>
+      <span class="n">servers</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="s">&quot;127.0.0.1:11211&quot;</span><span class="p">],</span>
+      <span class="n">compress_threshold</span> <span class="o">=&gt;</span> <span class="mi">10_000</span>
+    <span class="p">});</span>
+
+    <span class="nv">$memcached</span><span class="o">-&gt;</span><span class="n">add</span><span class="p">(</span><span class="nv">$key</span><span class="p">,</span> <span class="nv">$value</span><span class="p">,</span> <span class="nv">$expires</span><span class="p">);</span>
+    <span class="k">my</span> <span class="nv">$ret</span> <span class="o">=</span> <span class="nv">$memcached</span><span class="o">-&gt;</span><span class="n">get</span><span class="p">(</span><span class="nv">$key</span><span class="p">);</span>
+    <span class="k">print</span> <span class="s">&quot;$ret\n&quot;</span><span class="p">;</span>
+</code></pre></div>
+
+<p>这里对Cache::Memcached指定服务器IP和选项获得instance。</p>
+
+<p>Cache::Memcached经常利用到的选项有如下：</p>
+
+<table>
+<tr>
+  <th>选项</th>
+  <th>说明</th>
+</tr>
+<tr>
+  <td>servers</td>
+  <td>将memcached的服务器地址与端口通过数组形式组织起来</td>
+</tr>
+<tr>
+  <td>compress\_threshold</td>
+  <td>数据压缩时候的值64</td>
+</tr>
+<tr>
+  <td>namespace</td>
+  <td>指定key的前缀</td>
+</tr>
+</table>
+
+<p>Cache::Memcached能保存Perl的复杂的Storable模块的序列化的数据，日不哈希，数组，对象等等。</p>
+
+<h3>数据的保存</h3>
+
+<p>memcached保存数据的方法有</p>
+
+<ul>
+<li>add</li>
+<li>replace</li>
+<li>set</li>
+</ul>
+
+<p>三种方式的使用方法相同</p>
+
+<div class="highlight"><pre><code class="perl">    <span class="k">my</span> <span class="nv">$add</span> <span class="o">=</span> <span class="nv">$memcached</span><span class="o">-&gt;</span><span class="n">add</span><span class="p">(</span> <span class="s">&#39;key&#39;</span><span class="p">,</span> <span class="s">&#39;value&#39;</span><span class="p">,</span> <span class="s">&#39;expire time&#39;</span> <span class="p">);</span>
+    <span class="k">my</span> <span class="nv">$replace</span> <span class="o">=</span> <span class="nv">$memcached</span><span class="o">-&gt;</span><span class="n">replace</span><span class="p">(</span> <span class="s">&#39;key&#39;</span><span class="p">,</span> <span class="s">&#39;value&#39;</span><span class="p">,</span> <span class="s">&#39;expire time&#39;</span> <span class="p">);</span>
+    <span class="k">my</span> <span class="nv">$set</span> <span class="o">=</span> <span class="nv">$memcached</span><span class="o">-&gt;</span><span class="n">set</span><span class="p">(</span> <span class="s">&#39;key&#39;</span><span class="p">,</span> <span class="s">&#39;value&#39;</span><span class="p">,</span> <span class="s">&#39;expire time&#39;</span> <span class="p">);</span>
+</code></pre></div>
+
+<p>期限时间以秒为单位保存，不指定的情况下基于memcached的LRU策略保存数据。这三种方法的不同点在于</p>
+
+<table>
+<tr>
+  <th>选项</th>
+  <th>说明</th>
+</tr>
+<tr>
+  <td>add</td>
+  <td>仅当内存上没有此数据的时候保存</td>
+</tr>
+<tr>
+  <td>replace</td>
+  <td>仅在存在此数据的时候保存</td>
+</tr>
+<tr>
+  <td>set</td>
+  <td>任何情况都保存</td>
+</tr>
+</table>
+
+<h3>数据的获取</h3>
+
+<p>数据的获取利用get和get_multi等方法</p>
+
+<div class="highlight"><pre><code class="perl"><span class="k">my</span> <span class="nv">$val</span> <span class="o">=</span> <span class="nv">$memcached</span><span class="o">-&gt;</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;key&#39;</span><span class="p">);</span>
+<span class="k">my</span> <span class="nv">$val</span> <span class="o">=</span> <span class="nv">$memcached</span><span class="o">-&gt;</span><span class="n">get</span><span class="o">\</span><span class="n">_multi</span><span class="p">(</span><span class="s">&#39;key1&#39;</span><span class="p">,</span> <span class="s">&#39;key2&#39;</span><span class="p">,</span> <span class="s">&#39;key3&#39;</span><span class="p">,</span> <span class="s">&#39;key4&#39;</span><span class="p">,</span> <span class="s">&#39;key5&#39;</span><span class="p">);</span>
+</code></pre></div>
+
+<p>一下子取很多数据的时候用get_multi。利用get_multi，memcached能够不同步的取多个值，比用get循环取值速度块数十倍。</p>
+
+<h3>数据的删除</h3>
+
+<p>数据的删除用delete方法</p>
+
+<div class="highlight"><pre><code class="perl">    <span class="nv">$memcached</span><span class="o">-&gt;</span><span class="nb">delete</span><span class="p">(</span><span class="s">&#39;key&#39;</span><span class="p">,</span> <span class="s">&#39;block time&#39;</span><span class="p">);</span>
+</code></pre></div>
+
+<p>通常制定的第一参数是需要删除的数据的key，第二参数是在一定时间内不存储同样key的数据。这是为了防止缓存数据错乱。但是，<em>set方法能够在指定的key上强制保存数据</em>。请注意。</p>
+
+<h3>递增和递减</h3>
+
+<p>memcache上的特定的key上能够计数。</p>
+
+<div class="highlight"><pre><code class="perl"><span class="k">my</span> <span class="nv">$ret</span> <span class="o">=</span> <span class="nv">$memcached</span><span class="o">-&gt;</span><span class="n">incr</span><span class="p">(</span><span class="s">&#39;key&#39;</span><span class="p">);</span>
+<span class="nv">$memcached</span><span class="o">-&gt;</span><span class="n">add</span><span class="p">(</span><span class="s">&#39;key&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">unless</span> <span class="nb">defined</span> <span class="nv">$ret</span><span class="p">;</span>
+</code></pre></div>
+
+<p>注意是递增递减的计数操作不会在没有初始化时自动初始化为0。须要检查error进行初始化。同时当计数超过int的大笑之后，服务器段也不会检测。</p>
 
 <p>to be continued</p>
 

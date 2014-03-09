@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>cocos-2dxメモリ管理</title>
+        <meta name="viewport" content="width=device-width">
+
+        <!-- syntax highlighting CSS 
+        <link rel="stylesheet" href="/css/syntax.css">
+        -->
+        <link rel="stylesheet" href="/css/main.css">
+        <link rel="stylesheet" href="/css/carousel.css">
+        <link rel="stylesheet" href="/css/blog.css">
+    </head>
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">fdwills</a></h1>
+            <a class="extra" href="/">home</a>
+            <a class="extra" href="http://app.fdwills.com/visitor/users/1/home">album</a>
+            <a class="extra" href="https://github.com/fdwills">github</a>
+          </div>
+
+          <h2>cocos-2dxメモリ管理</h2>
+<p class="meta">19 Feb 2014</p>
+
+<div class="post">
+<p>cppで実現されたcoco2d-xのメモリについて、cppの言語自身動的なメモリを自動的に開放できない。
+auto_ptr、smart_ptrを使わず、object-cのようなaotoReleasePoolをcount referenceで実現しました。</p>
+
+<h3>count referenceをCCObject.hに関連定義</h3>
+<div class="highlight"><pre><code class="text language-text" data-lang="text">class CC_DLL Object
+{
+public:
+    /// object id, ScriptSupport need public _ID
+    unsigned int _ID;
+    /// Lua reference id
+    int _luaID;
+protected:
+    /// count of references
+    unsigned int _referenceCount;
+</code></pre></div>
+<p>全てのクラスはCCObject(CCScene, CCSprite, CCLayerとか)をベースとして継承したクラスは、count referenceの仕組みがある。</p>
+
+<h3>autoreleaseをCCObject.cppに関連実現</h3>
+<div class="highlight"><pre><code class="text language-text" data-lang="text">Object* Object::autorelease()
+{
+    PoolManager::getInstance()-&gt;getCurrentPool()-&gt;addObject(this);
+    return this;
+}
+</code></pre></div>
+<p>呼び出すとCCObjectはPoolManagerに管理される。PoolManager実際の動作は、毎フレームの時ループでPoolにあるObjectをチェックした、reference数によって処理を行う。つまり、CCObjectのinstanceをnewした後、autoreleaseメッソドを呼び出すと、メモリを管理しなくていい。</p>
+
+<h3>CREATE_FUNCについて</h3>
+
+<p>実際使う時new initじゃなくてcreateを使う。CLASS.hによく使うCREATE_FUNCメソッドはCCPlatformMacros.hに定義した。</p>
+<div class="highlight"><pre><code class="text language-text" data-lang="text">#define CREATE_FUNC(__TYPE__) \
+static __TYPE__* create() \
+{ \
+    __TYPE__ *pRet = new __TYPE__(); \
+    if (pRet &amp;&amp; pRet-&gt;init()) \
+    { \
+        pRet-&gt;autorelease(); \
+        return pRet; \
+    } \
+    else \
+    { \
+        delete pRet; \
+        pRet = NULL; \
+        return NULL; \
+    } \
+}
+</code></pre></div>
+<p>つまり、終期化した後、autoreleaseを使うこと。そして、createを使うとautoreleaseを呼ばなくていい。</p>
+
+<h3>retainについて</h3>
+
+<p>CCObject.hにretainを定義した。</p>
+<div class="highlight"><pre><code class="text language-text" data-lang="text">    inline void retain()
+    {
+        CCASSERT(_referenceCount &gt; 0, &quot;reference count should greater than 0&quot;);
+        ++_referenceCount;
+    }
+</code></pre></div>
+<p>それに対して、releaseメソッドは_referenceCountを減らす(0の時メモリを解放する)。</p>
+
+<h3>addChildについて</h3>
+
+<p>前話したautoreleasepoolについては、createしたinstance（背景かと、主人公とか）何もしない場合、次のフレームの時autoreleasepoolによるreleaseされる、エラーになる。その時CCNodeのaddChildメッソドを使う。名前通り、子供として追加すること。３つの形のaddhildがあるんですが、全てはChildrenのCCVectorにpushBackすること。</p>
+
+<p>CCVector.h</p>
+<div class="highlight"><pre><code class="text language-text" data-lang="text">    void pushBack(T object)
+    {
+        CCASSERT(object != nullptr, &quot;The object should not be nullptr&quot;);
+        _data.push_back( object );
+        object-&gt;retain();
+    }
+</code></pre></div>
+<p>中に object-&gt;retain()を使っている。それに対してpopBackにreleaseを使っている。要するに、addChildを使うと、</p>
+
+<ol>
+<li>~parentのときは、ChildrenのCCVectorを削除する。つまりaddChildで追加したchildはparentが存在するchildも存在する（フレームに関係なく）</li>
+<li>手動的にretain,releaseしなくていい、すでにparentが管理している</li>
+</ol>
+
+<h3>手動的にretainしたい場合</h3>
+
+<p>手動的のretainしたい場合もなる。永続かしたい、開発者がObjectのLift circleをコントロールしたい場合、手動的にretainを使う。retainを手動で呼ぶと、autoreleasepoolは削除できない(_referenceCountを0にできないから)、メモリリークを発生しまう。そして必ずpairとしてreleaseを使って、CCObjectのメモリをreleaseする。</p>
+
+<h3>まとめ</h3>
+
+<ol>
+<li>new, initを避けてcreateを使う</li>
+<li>retainした後必ずrelease</li>
+<li>addChildを使ってretainを使わない場合、メモリを管理しなくていい(ただしremoveChildは必要)</li>
+</ol>
+
+<p>メモとして、参考Cococs2dxバージョン：3.0.0betarsion: cocos2dx3.0-beta</p>
+
+</div>
+
+<br>
+<h3><a href=https://github.com/fdwills/fdwills.github.io/issues/new>[click to comment]</a></h3>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                wills<br />
+                Engineer<br />
+                weirenzhong@gmail.com
+              </p>
+            </div>
+          </div>
+        </div>
+
+    </body>
+</html>

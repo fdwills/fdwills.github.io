@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>cocos-2dxmemo2</title>
+        <meta name="viewport" content="width=device-width">
+
+        <!-- syntax highlighting CSS 
+        <link rel="stylesheet" href="/css/syntax.css">
+        -->
+        <link rel="stylesheet" href="/css/main.css">
+        <link rel="stylesheet" href="/css/carousel.css">
+        <link rel="stylesheet" href="/css/blog.css">
+    </head>
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">fdwills</a></h1>
+            <a class="extra" href="/">home</a>
+            <a class="extra" href="http://app.fdwills.com/visitor/users/1/home">album</a>
+            <a class="extra" href="https://github.com/fdwills">github</a>
+          </div>
+
+          <h2>cocos-2dxmemo2</h2>
+<p class="meta">19 Feb 2014</p>
+
+<div class="post">
+<p>version: cocos2dx3.0-beta</p>
+
+<h3>设置背景颜色</h3>
+<div class="highlight"><pre><code class="text language-text" data-lang="text">LayerColor* bg_layer = LayerColor::create(Color4B(255,255,255,255));
+bg_layer-&gt;setPosition(Point(0,0));
+bg_layer-&gt;setContentSize(visibleSize);
+this-&gt;addChild(bg_layer, 0);
+</code></pre></div>
+<h3>移动物体</h3>
+<div class="highlight"><pre><code class="text language-text" data-lang="text">FiniteTimeAction* action_move = MoveTo::create(float(speed), Point(rand_x, origin.y - size.height/2));
+FiniteTimeAction* action_move_done = CallFuncN::create(this, callfuncN_selector(HelloWorld::targetFinish));
+
+sprite-&gt;runAction(Sequence::create(action_move, action_move_done, NULL));
+
+this-&gt;addChild(sprite, 1);
+</code></pre></div>
+<h3>添加schedule</h3>
+<div class="highlight"><pre><code class="text language-text" data-lang="text">this-&gt;schedule(schedule_selector(HelloWorld::gameLogic), 0.5);
+</code></pre></div>
+<h3>iOS环境设置屏幕反向</h3>
+
+<p>info.plist配置</p>
+<div class="highlight"><pre><code class="text language-text" data-lang="text">&lt;key&gt;UISupportedInterfaceOrientations&lt;/key&gt;
+&lt;array&gt;
+    //UIInterfaceOrientationLandscapeLeft
+    //UIInterfaceOrientationLandscapeRight
+    &lt;string&gt;UIInterfaceOrientationPortrait&lt;/string&gt;
+&lt;/array&gt;
+</code></pre></div>
+<p>RootViewController.mm</p>
+
+<p>shouldAutorotateToInterfaceOrientation函数</p>
+<div class="highlight"><pre><code class="text language-text" data-lang="text">//return UIInterfaceOrientationIsLandscape( interfaceOrientation );
+return UIInterfaceOrientationIsPortrait( interfaceOrientation );
+</code></pre></div>
+<p>supportedInterfaceOrientations函数
+    //return UIInterfaceOrientationMaskAllButUpsideDown;
+    return UIInterfaceOrientationMaskPortrait;</p>
+
+<h3>设置文字</h3>
+<div class="highlight"><pre><code class="text language-text" data-lang="text">auto label = LabelTTF::create(&quot;Hello World&quot;, &quot;Arial&quot;, 24);
+
+// position the label on the center of the screen
+label-&gt;setPosition(Point(origin.x + visibleSize.width/2,
+                        origin.y + visibleSize.height - label-&gt;getContentSize().height));
+
+// add the label as a child to this layer
+this-&gt;addChild(label, 1);
+</code></pre></div>
+</div>
+
+<br>
+<h3><a href=https://github.com/fdwills/fdwills.github.io/issues/new>[click to comment]</a></h3>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                wills<br />
+                Engineer<br />
+                weirenzhong@gmail.com
+              </p>
+            </div>
+          </div>
+        </div>
+
+    </body>
+</html>

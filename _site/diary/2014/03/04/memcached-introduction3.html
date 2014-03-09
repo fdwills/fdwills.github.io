@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>【译】memcached介绍(3)</title>
+        <meta name="viewport" content="width=device-width">
+
+        <!-- syntax highlighting CSS 
+        <link rel="stylesheet" href="/css/syntax.css">
+        -->
+        <link rel="stylesheet" href="/css/main.css">
+        <link rel="stylesheet" href="/css/carousel.css">
+        <link rel="stylesheet" href="/css/blog.css">
+    </head>
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">fdwills</a></h1>
+            <a class="extra" href="/">home</a>
+            <a class="extra" href="http://app.fdwills.com/visitor/users/1/home">album</a>
+            <a class="extra" href="https://github.com/fdwills">github</a>
+          </div>
+
+          <h2>【译】memcached介绍(3)</h2>
+<p class="meta">04 Mar 2014</p>
+
+<div class="post">
+<p>翻译来自日本某技术网站的入门级文章。<a href="http://gihyo.jp/dev/feature/01/memcached/0003">链接</a></p>
+
+<p>译者水平有限翻译如有误请指出。</p>
+
+<p>因为memcached是缓存的原因，以指定的数据不会在服务器常驻作为而前提导入的机制。本次讲memcached的清除机制，然后讲memcached的最新动态：二进制协议和外部引擎支持。</p>
+
+<h2>memcached在数据清除方面也使得资源得到有效的利用</h2>
+
+<h3>memcached不能将实际的数据删除</h3>
+
+<p>前面介绍过，memcached不释放分配到的内存。记录在超市之后，客户端仅仅是看不到（变的透明），这个领域将被再利用。</p>
+
+<h3>lazy Expiration</h3>
+
+<p>memcached不监视记录是否超市，而是在get操作时检查timestamp来判断是否超时。这个技术被叫做Lazy expiration。所以不会因为memcached的监视而消耗CPU的资源。</p>
+
+<h2>LRU: 有效的从缓存清除的数据的机制</h2>
+
+<p>memcached在优先再利用过期的数据，在没有空间添加新的数据的时候使用Least Recently Used（LRU）的策略来获得存储空间。就像名字里面的所说的，最近最少使用的记录将作为删除对象。所以在memcached的内存不足的时候（不能从slab里面取得内存的时候），最近没有被引用到的纪录被找出来，这格记录的内存空间就会被新的记录使用。从缓存的实用性来看这个策略是一个理想的策略。</p>
+
+<p>从usecase来看，LRU的策略也有变得碍手碍脚的可能。当存在这种情况的时候，在memcached启动的时候使用-M参数将LRU无效化。</p>
+<div class="highlight"><pre><code class="text language-text" data-lang="text">$ memcached -M -m 1024
+</code></pre></div>
+<p>启动时不得不注意的一点是用-m选项指定最大的内存空间。如果没有指定的话默认将以64MB的空间启动。</p>
+
+<p>-M选项启动之后，当内存空间不足是，memcached会返回error。因为memcached不是存储而是缓存，所以使用LRU启动是推荐的选择。</p>
+
+<h2>memcached的最新动向</h2>
+
+<p>现在memcached的路线图有两大目标。一个是二进制协议的策划和实现，另一个是能装载外部的引擎。</p>
+
+<h3>二进制协议有关内容</h3>
+
+<p>采用二进制协议的理由是省去文本协议的解析处理，将已经很高速的memcached性能更上一层。另外还为了减小采用文本协议带来的脆弱性。实现实际上已经做了非常多，开发的repo已经在web公开。<a href="http://danga.com/memcached/download.bml">链接</a></p>
+
+<h3>二进制协议的形式</h3>
+
+<p>协议的包是固定为24字节长的帧，之后接key-value和无结构数据。实际的形式如下（从设计书中摘取）</p>
+<div class="highlight"><pre><code class="text language-text" data-lang="text">Byte/     0       |       1       |       2       |       3       |   
+    /              |               |               |               |   
+   |0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|
+   +---------------+---------------+---------------+---------------+
+  0/ HEADER                                                        /   
+   /                                                               /   
+   /                                                               /   
+   /                                                               /   
+   +---------------+---------------+---------------+---------------+
+ 24/ COMMAND-SPECIFIC EXTRAS (as needed)                           /   
+  +/  (note length in th extras length header field)               /   
+   +---------------+---------------+---------------+---------------+
+  m/ Key (as needed)                                               /   
+  +/  (note length in key length header field)                     /   
+   +---------------+---------------+---------------+---------------+
+  n/ Value (as needed)                                             /   
+  +/  (note length is total body length header field, minus        /   
+  +/   sum of the extras and key length body fields)               /   
+   +---------------+---------------+---------------+---------------+
+  Total 24 bytes
+</code></pre></div>
+<p>正如上面看到的，包的形式变的非常的简单。在这个形式当中，值得留意的是占有26个字节的HEADER空间。HEAD有Request和response两种。HEADER里卖弄有表示包有效性的Magic字节，命令的种类，key的长度，value的长度等等信息。形式如下：</p>
+
+<p>request</p>
+<div class="highlight"><pre><code class="text language-text" data-lang="text">Byte/     0       |       1       |       2       |       3       |
+    /              |               |               |               |
+   |0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|
+   +---------------+---------------+---------------+---------------+
+  0| Magic         | Opcode        | Key length                    |
+   +---------------+---------------+---------------+---------------+
+  4| Extras length | Data type     | Reserved                      |
+   +---------------+---------------+---------------+---------------+
+  8| Total body length                                             |
+   +---------------+---------------+---------------+---------------+
+ 12| Opaque                                                        |
+   +---------------+---------------+---------------+---------------+
+ 16| CAS                                                           |
+   |                                                               |
+   +---------------+---------------+---------------+---------------+
+</code></pre></div>
+<p>response</p>
+<div class="highlight"><pre><code class="text language-text" data-lang="text">Byte/     0       |       1       |       2       |       3       |
+    /              |               |               |               |
+   |0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|
+   +---------------+---------------+---------------+---------------+
+  0| Magic         | Opcode        | Key length                    |
+   +---------------+---------------+---------------+---------------+
+  4| Extras length | Data type     | Reserved                      |
+   +---------------+---------------+---------------+---------------+
+  8| Total body length                                             |
+   +---------------+---------------+---------------+---------------+
+ 12| Opaque                                                        |
+   +---------------+---------------+---------------+---------------+
+ 16| CAS                                                           |
+   |                                                               |
+   +---------------+---------------+---------------+---------------+
+</code></pre></div>
+<p>如果想要知道具体每个域是什么意思，可以看memcached的开发包docs文件夹下的protocol_binary.txt文件。</p>
+
+<h3>看了HEADER在意的地方</h3>
+
+<p>看了HEADER之后我想到的是key的临界值巨大。现在的memcached的协议里面有key的长度最长250个字节的限制。二级制协议当中key长度用两个字节表示，也就是可以处理长度为65535的key。虽然key长度250在实际的usecase已经很少见，但是二进制协议一旦发布将能处理巨大长度的key。二进制协议将会在1.3版本中得到支持。</p>
+
+<h2>外部引擎的对应</h2>
+
+<p>去年实验性的对memcached的线程层面进行了能够加插件的改造。<a href="http://alpha.mixi.co.jp/2008/10656/">链接</a></p>
+
+<p>这个改造给了Mysql的Brian Aker看了之后代码被发给了memcached的邮件列表中的人，然后他们将这个记在了路线图中。现在与memcached的开发者之一的TrndNorbye一起开发。与海外的共同开发的时候虽然时差是个难题，但是仍然国内公开了插件形式的模型。可以从官网下载。</p>
+
+<h3>对应外部引擎的重要性</h3>
+
+<p>时尚存在很多memcached的派生版本的理由是希望多少牺牲一些性能来达到数据的持久化和实现冗长性。与现在的开发无关，以前在mixi的时候就有过重新开发memcached的时候。</p>
+
+<p>外部的引擎的架构里，memcached能够处理网络和事件等复杂的处理。所以，现在被memcached烦恼的与存储引擎相关的事情，今后就可以通过各种各样的引擎插件来完成。</p>
+
+<h3>简介的API成功设计的关键</h3>
+
+<p>在这个项目当中我们非常重视的是API的设计。action的数量过多的话会使引擎开发人员觉得很麻烦，太过复杂会使得实现的门槛变得很高。因为这样第一版本里面只留下了13个API接口。详细的内容因为太长这里省略，下面这些是引擎须要的操作。</p>
+
+<ul>
+<li>引擎的信息</li>
+<li>引擎的初始化</li>
+<li>引擎的关闭</li>
+<li>引擎的统计信息</li>
+<li>能否保存指定大小数据的判定</li>
+<li>分配item的内存</li>
+<li>释放item的内存</li>
+<li>记录的删除</li>
+<li>记录的保存</li>
+<li>记录的回收</li>
+<li>更新记录的时间戳</li>
+<li>处理数值计算</li>
+<li>数据的flush</li>
+</ul>
+
+<p>想详细知道具体细节的话请查看开发包的engine.h头文件。</p>
+
+<h3>现行架构的修改</h3>
+
+<p>memcached对应外部的存储引擎的难点在于通过web和时间机制处理的记录，以及与内存存储结合紧密的处理。这个现象也被叫做tightly coupled。如果不把现行的内存存世的记录从还行服务器独立出来的话，外部引擎就不能有效的对应。所以，基于我们设计的API的memcached被重构成一下(图中日文我就不翻译了)：</p>
+
+<p><img src="/assets/0003-01.png" alt="1"></p>
+
+<p>重构后对1.2.5版本以及采用了二进制协议的版本做了评测，确认了对性能没有影响。</p>
+
+</div>
+
+<br>
+<h3><a href=https://github.com/fdwills/fdwills.github.io/issues/new>[click to comment]</a></h3>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                wills<br />
+                Engineer<br />
+                weirenzhong@gmail.com
+              </p>
+            </div>
+          </div>
+        </div>
+
+    </body>
+</html>
