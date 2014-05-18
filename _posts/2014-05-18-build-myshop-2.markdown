@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "rails中的memcached"
-date:   2014-05-17 20:44:57
+date:   2014-05-18 20:44:57
 categories: diary
 tags: blog
 ---
