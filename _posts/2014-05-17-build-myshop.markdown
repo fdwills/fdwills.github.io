@@ -70,4 +70,8 @@ establish_connection "login_#{Rails.env}"
 
 关于状态的更新是指该订单在流程中所处于的位置（新建--正在处理--已发货--已收到--处理结束）。在这些状态中用户只能改变其中的某系状态，管理员也只能改变其中的某些，所以在状态的更新过程中做了严格的权限检查。
 
+流程图
+
+![1]({{ site.url }}/assets/shop-flow.png)
+
 [app]: app.fdwills.com
