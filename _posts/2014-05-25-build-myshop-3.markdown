@@ -18,15 +18,15 @@ tags: blog
 
 ### 自动抓取汇率的batch系统
 
-1. 使用[whenever][whenever]实施cron的管理，在Gemfile里面追加
+#### 使用[whenever][whenever]实施cron的管理，在Gemfile里面追加
 
     gem 'whenever', :require => false
 
-2. 初始化whenever
+#### 初始化whenever
 
     wheneverize .
 
-3. 修改schedule.rb
+#### 修改schedule.rb
 
 之后会在config/下面得到schedule.rb，里面的每个every对应了一个crontab里面的项。
 
@@ -38,7 +38,8 @@ every 4.hours do
   rake "current_rate:generate"
 end
 ```
-4. 建立任务
+
+#### 建立任务
 
 建立具体的任务，例如这次建立的current_rate:generate任务
 
@@ -83,7 +84,7 @@ end
 
 由于网页网页失效/网页parse错误/取值异常等可能性，所以考虑对batch的rate值发mail通知管理员（userID = 1）。
 
-1. 新建mail模型
+#### 新建mail模型
 
     rails generate mailer SystemMailer
 
@@ -109,6 +110,7 @@ end
 ```
 
 此时重新修改current_rate.rb的task，加入邮件处理，代码如下
+
 ```
 require 'open-uri'
 
