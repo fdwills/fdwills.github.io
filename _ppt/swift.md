@@ -51,7 +51,9 @@ var stringVariable = "hello"
 // \()可以将表达式内置与字符串内
 var stringVariable2 = "the value is \(floatVariable + integerVariable) \n"
 ```
+
 ---
+
 ## 数组
 
 ```
@@ -122,7 +124,9 @@ default:
     let vegetableComment = "Everything tastes good in soup."
 }
 ```
+
 --
+
 ```
 var firstForLoop = 0
 for i in 0..3 {
@@ -136,7 +140,9 @@ for var i = 0; i < 3; ++i {
 }
 secondForLoop
 ```
+
 --
+
 ```
 let interestingNumbers = [
     "Prime": [2, 3, 5, 7, 11, 13],
@@ -153,7 +159,9 @@ for (kind, numbers) in interestingNumbers {
 }
 largest
 ```
+
 --
+
 ```
 var n = 2
 while n < 100 {
@@ -167,7 +175,9 @@ do {
 } while m < 100
 m
 ```
+
 ---
+
 ## 函数定义与调用
 c++
 ```
@@ -175,7 +185,6 @@ string greet(string name, string day) {
     return name + ", today is " + day;
 }
 ```
-
 
 swift
 
@@ -199,8 +208,10 @@ func sumOf(numbers: Int...) -> Int {
 sumOf()
 sumOf(1, 2, 3)
 ```
+
 --
-* 函数可以嵌套
+
+函数可以嵌套
 
 ```
 func returnFifteen() -> Int {
@@ -215,7 +226,7 @@ returnFifteen()
 ```
 --
 
-* 函数的参数可以是函数
+函数的参数可以是函数
 
 ```
 func hasAnyMatches(list: Int[], condition: Int -> Bool) -> Bool {
@@ -234,7 +245,7 @@ hasAnyMatches(numbers, lessThanTen)
 ```
 --
 
-* 函数的返回值可以是函数
+函数的返回值可以是函数
 
 ```
 func makeIncrementer() -> (Int -> Int) {
@@ -249,7 +260,7 @@ increment(7)
 
 --
 
-* 其他用法：代码块
+其他用法：代码块
 ```
 numbers.map({
     (number: Int) -> Int in
@@ -260,6 +271,7 @@ numbers.map({
 sort([1, 5, 3, 12, 2]) { $0 > $1 }
 
 ```
+
 ---
 
 ## 类
@@ -316,8 +328,9 @@ var shapeDescription = shape.simpleDescription()
 ```
 --
 
-* set和get
-* willset和didset
+set和get
+
+willset和didset
 
 ```
 class TriangleAndSquare {
@@ -332,11 +345,14 @@ class TriangleAndSquare {
     }
 }
 ```
+
 --
 
-* 方法的对外名和对内名
+方法的对外名和对内名
+
 
 函数
+
 ```
 func sum(num : Int) -> Int {
     return num + num + num
@@ -345,6 +361,7 @@ sum(10)
 ```
 
 类方法
+
 ```
 class test {
     func sum(firstNum : Int, secondNum : Int, thirdNum num3 : Int) -> Int {
@@ -359,5 +376,30 @@ obj.sum(5, secondNum:6, thirdNum:7)
 ---
 
 ## 枚举类型
+
+```
+enum Rank: Int {
+    case Ace = 1
+    case Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten
+    case Jack, Queen, King
+    func simpleDescription() -> String {
+        switch self {
+        case .Ace:
+            return "ace"
+        case .Jack:
+            return "jack"
+        case .Queen:
+            return "queen"
+        case .King:
+            return "king"
+        default:
+            return String(self.toRaw())
+        }
+    }
+}
+let ace = Rank.Ace
+let aceRawValue = ace.toRaw()
+```
+---
 
 
