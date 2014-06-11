@@ -1,0 +1,37 @@
+@startuml
+
+== Get products ==
+Client -> Server: Get Products Request
+Server -> Server: Time Filter
+Server -> Server: Buy Limit Filter
+note left: 商品的购买限制的确认
+Server --> Client: Products
+note left: 服务器返回给客户端列表
+
+== Purchase ==
+Client -> Server: Get Transaction Request(Product ID, Quantity)
+Server -> Server: Check Schedule
+Server -> Server: Check Buy Limit
+note left: 商品的购买限制的确认
+Server -> Server: Check Player Balance
+note left: 用户的余额的确认，即使虚拟货币的确认
+Server -> Server: Create Bank Transaction
+note left
+	某用户只允许对一个商品拥有一个当前事务
+	如果已经存在一个的话就取消之前的事务
+end note
+Server --> Client: Transaction ID
+Client -> Server: Purchase Request(Transaction ID)
+Server -> Server: Check Transaction ID
+group transcation
+	Server -> Server: Consume
+	note left: 用户的虚拟货币的消费
+	Server -> Server: Give Inventory/Lunch Gacha
+	note left: 具体的内容的赋予
+	Server -> Server: Close Transaction
+	note right: 结束事务
+end
+Server --> Client: Inventory IDs
+note right: 返回购买结果给App
+
+@enduml
