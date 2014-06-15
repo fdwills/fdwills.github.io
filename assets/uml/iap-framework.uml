@@ -1,0 +1,50 @@
+@startuml
+
+== Get Products ==
+Client -> Server: Get Products Request
+note left: 取得服务器里用户能够购买的商品设定
+Server --> Client: Avalibale Products in Server
+Client -> App_Store: Get Products Requests
+note left: 取得AppStore里面的商品设定
+App_Store --> Client: Avalibale Products
+Client -> Client: Show Product List
+note left: 显示能够购买的商品
+
+== Purchase ==
+ref over Client,Server,App_Store
+  恢复处理
+end ref
+Client -> Server: Get Server Transaction
+ref over Server
+  Server的事务发放
+end ref
+Server --> Client: Server Transaction ID
+Client -> App_Store: Puchase Request(Product ID, quantity)
+App_Store --> Client: Purchase Success Response
+note right: 这里已经获得了购买的收据
+Client -> Server: Close Server Transaction Request(IAP Transaction)
+note left: 向服务器发送关闭事务的请求
+Server -> Server: Check Server Transaction Status
+note right: 确认该事务之前没有被处理
+Server -> Server: Get Receipt
+note right
+  iOS7.0之后收据的格式有了变化
+  1. 收据是二进制数据，
+  2.一个收据当中包含App本身以及多次购买的商品的数据
+end note
+Server -> App_Store: Check Receipt Status
+note left: 向苹果服务器确认收据的合法性
+App_Store --> Server: Valid Receipt
+Server -> Server: Check IAP Transaction
+note left
+  向App发送收据时，服务器返回购买当时的具体情况
+end note
+group transcation
+  Server -> Server: Give ItemSet/Lunch Gacha ItemSet
+  note right: 内容赋予/扭蛋抽奖等等
+  Server -> Server: Close Transaction
+end
+Server --> Client: Inventory Ids
+Client -> Client: remove IAP Transaction
+note right: 实际上是调用了finishTransaction
+@enduml

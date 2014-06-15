@@ -1,0 +1,23 @@
+@startuml
+title <size:18>IAP恢复处理</size>
+
+(*) --> "恢复处理开始"
+
+--> 取得PaymentQueue
+if "Queue内留有残留事务" then
+	--> [No] (*)
+else
+	--> [Yes] "向服务器确认事务状态"
+	--> if "服务器处理已结束" then
+		--> [Yes] "从PaymentQueue删除该事务"
+	else
+		--> [No] "服务器处理开始"
+		--> "服务器通知App处理结果"
+		--> "从PaymentQueue删除该事务"
+	endif
+endif
+
+--> (*)
+note right : 结束
+
+@enduml
