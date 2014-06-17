@@ -11,34 +11,29 @@ tags: travel
 * 7.5 （周六）东京（成田）--札幌（新千岁） 宿札幌
 
     飞机16:25~18:10
+https://www.airbnb.jp/s/%E6%9C%AD%E5%B9%8C%E9%A7%85?checkin=2014%2F07%2F05&checkout=2014%2F07%2F06&guests=4
 
 * 7.6 札幌——旭 宿旭川
 
 * 7.7 旭川动物园——层云--旭川 宿旭川
 
+http://hotel.travel.rakuten.co.jp/hotelinfo/plan/238?f_teikei=ensen&f_hizuke=&f_hak=&f_dai=japan&f_chu=hokkaido&f_shou=asahikawa&f_sai=&f_tel=&f_target_flg=&f_tscm_flg=&f_p_no=&f_custom_code=&f_search_type=&f_camp_id=&f_static=1&f_rm_equip=&f_hi1=6&f_tuki1=7&f_nen1=2014&f_hi2=8&f_tuki2=7&f_nen2=2014&f_heya_su=1&f_otona_su=2&f_kin2=0&f_kin=&f_s1=0&f_s2=0&f_y1=0&f_y2=0&f_y3=0&f_y4=0
+
+http://www.booking.com/hotel/jp/crescent.ja.html?aid=309654;label=Hotels-ja-TZ3tfS3W0fvlzYnIFL4SEwS40722422932%3Apl%3Ata%3Ap1%3Ap2%3Aac695932%3Aap1t1%3Aneg;sid=7eeab07f6d440fa9212dfa5463b905da;dcid=1;checkin=2014-07-06;checkout=2014-07-08;ucfs=1;in_a_group=on;widened_group=1;group_adults=2;group_children=0;group_adults=2;group_children=0;group_rooms=39067201_83496641_0_0_2_0_0,39067201_83496641_0_0_2_0_0;srfid=10c73cdbd9e7742bad7b83805be9667aa3b78e5d
+
 * 7.8 美瑛——富田农 宿带广（温泉）
 
-* 7.9 带广--札幌 宿札幌
+http://www.booking.com/hotel/jp/hoterubosuton.ja.html?aid=309654;label=Hotels-ja-TZ3tfS3W0fvlzYnIFL4SEwS40722422932%3Apl%3Ata%3Ap1%3Ap2%3Aac695932%3Aap1t1%3Aneg;sid=7eeab07f6d440fa9212dfa5463b905da;dcid=1;checkin=2014-07-08;checkout=2014-07-09;ucfs=1;group_adults=4;group_children=0;group_rooms=103160304_83654210_4_2_4_0_0;srfid=a7678a8baa0077c08c736f6e1fbfc43361cb19b3X2#rt-lightbox-open
 
-* 7.10 登别地狱谷——洞爷湖——昭和--温泉旅馆
+* 7.9 带广--小樽 小樽
 
-* 7.11 小樽--札幌 宿札幌
+http://www.jalan.net/uw/uwp3200/uww3201init.do?yadNo=315458&planCd=00149242&roomTypeCd=0016891&showSpFooterFlg=0&keyword=%E5%B0%8F%E6%A8%BD&ntaLinkFlg=0&jalLinkFlg=0&anaLinkFlg=0&kekakuStatus=0&taxType=1&pointIconDisplayFlg=1&iwf=&stayCount=1&roomCount=1&afCd=&stayDay=9&child1Num=&child2Num=&child3Num=&child4Num=&child5Num=&kenCd=&stayYear=2014&stayMonth=7&adultNum=4&minPrice=0&maxPrice=999999&careOutsidePool=&careBeach5=&careStation5=&carePak=&careItnr=&careNsmr=&careBath=&careOnsen=&careBathRent=&carePribateBath=&careDinRoom=&carePet=&careHighClass=&carePoint=&careSweet=&careBt=&careEsthetics=&careLookoutBath=&careSauna=&careTakkyu=&careJacuzzi=&careMassage=&careSkiRent=&careBoardRent=&careSogei=&careBrkRoom=&careDinPrv=&careBrkPrv=&careChekout11=&careOpenbath=&careCard=&careCardOnly=&careKake=&careNigori=&rootCd=7701
 
-* 7.12 札幌
+* 7.10 小樽--登别地狱谷——洞爷湖 洞爷湖
 
-    札幌钟楼
+* 7.11 昭和--函馆 函馆
 
-    大通公园
-
-    札幌电视塔
-
-    札幌啤酒工厂
-
-    北海道大学
-
-    藻岩山
-
-* 7.12 飞机：19:00
+* 7.12 函馆--新千岁 飞机：19:00
 
 ## 交通
 
