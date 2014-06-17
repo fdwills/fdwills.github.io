@@ -10,7 +10,6 @@ tags: travel
 
 * 7.5 （周六）东京（成田）--札幌（新千岁） 宿札幌
 
-    飞机16:25~18:10
 https://www.airbnb.jp/s/%E6%9C%AD%E5%B9%8C%E9%A7%85?checkin=2014%2F07%2F05&checkout=2014%2F07%2F06&guests=4
 
 * 7.6 札幌——旭 宿旭川
