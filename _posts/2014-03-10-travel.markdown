@@ -30,7 +30,11 @@ http://www.jalan.net/uw/uwp3200/uww3201init.do?yadNo=315458&planCd=00149242&room
 
 * 7.10 小樽--登别地狱谷——洞爷湖 洞爷湖
 
+【暂无】
+
 * 7.11 昭和--函馆 函馆
+
+http://www.jalan.net/uw/uwp3200/uww3201init.do?stayCount=1&roomCount=2&stayDay=11&stayYear=2014&stayMonth=7&adultNum=2&distCd=01&roomCrack=200000,200000&screenId=UWW1402&yadNo=331166&planCd=01225011&roomTypeCd=0132523&callbackHistFlg=1
 
 * 7.12 函馆--新千岁 飞机：19:00
 
