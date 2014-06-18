@@ -20,9 +20,11 @@ http://hotel.travel.rakuten.co.jp/hotelinfo/plan/238?f_teikei=ensen&f_hizuke=&f_
 
 http://www.booking.com/hotel/jp/crescent.ja.html?aid=309654;label=Hotels-ja-TZ3tfS3W0fvlzYnIFL4SEwS40722422932%3Apl%3Ata%3Ap1%3Ap2%3Aac695932%3Aap1t1%3Aneg;sid=7eeab07f6d440fa9212dfa5463b905da;dcid=1;checkin=2014-07-06;checkout=2014-07-08;ucfs=1;in_a_group=on;widened_group=1;group_adults=2;group_children=0;group_adults=2;group_children=0;group_rooms=39067201_83496641_0_0_2_0_0,39067201_83496641_0_0_2_0_0;srfid=10c73cdbd9e7742bad7b83805be9667aa3b78e5d
 
-* 7.8 美瑛——富田农 宿带广（温泉）
+* 7.8 美瑛——富田农 ~~宿带广（温泉)~~ 富良野
 
-http://www.booking.com/hotel/jp/hoterubosuton.ja.html?aid=309654;label=Hotels-ja-TZ3tfS3W0fvlzYnIFL4SEwS40722422932%3Apl%3Ata%3Ap1%3Ap2%3Aac695932%3Aap1t1%3Aneg;sid=7eeab07f6d440fa9212dfa5463b905da;dcid=1;checkin=2014-07-08;checkout=2014-07-09;ucfs=1;group_adults=4;group_children=0;group_rooms=103160304_83654210_4_2_4_0_0;srfid=a7678a8baa0077c08c736f6e1fbfc43361cb19b3X2#rt-lightbox-open
+http://www.booking.com/hotel/jp/pension-chermaman.ja.html?aid=309654;label=Hotels-ja-TZ3tfS3W0fvlzYnIFL4SEwS40722422932%3Apl%3Ata%3Ap1%3Ap2%3Aac695932%3Aap1t1%3Aneg;sid=7eeab07f6d440fa9212dfa5463b905da;dcid=1;checkin=2014-07-08;checkout=2014-07-09;ucfs=1;group_adults=4;group_children=0;group_rooms=42756106_83935034_4_0_4_0_0;srfid=144963b6b6624ec6182c4ef96c2eda16f577b8e1X2
+
+~~http://www.booking.com/hotel/jp/hoterubosuton.ja.html?aid=309654;label=Hotels-ja-TZ3tfS3W0fvlzYnIFL4SEwS40722422932%3Apl%3Ata%3Ap1%3Ap2%3Aac695932%3Aap1t1%3Aneg;sid=7eeab07f6d440fa9212dfa5463b905da;dcid=1;checkin=2014-07-08;checkout=2014-07-09;ucfs=1;group_adults=4;group_children=0;group_rooms=103160304_83654210_4_2_4_0_0;srfid=a7678a8baa0077c08c736f6e1fbfc43361cb19b3X2#rt-lightbox-open~~
 
 * 7.9 带广--小樽 小樽
 
