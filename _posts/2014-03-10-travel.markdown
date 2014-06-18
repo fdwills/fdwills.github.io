@@ -10,7 +10,9 @@ tags: travel
 
 * 7.5 （周六）东京（成田）--札幌（新千岁） 宿札幌
 
-https://www.airbnb.jp/s/%E6%9C%AD%E5%B9%8C%E9%A7%85?checkin=2014%2F07%2F05&checkout=2014%2F07%2F06&guests=4
+http://www.booking.com/hotel/jp/khaosansapporo.ja.html?aid=309654;label=Hotels-ja-TZ3tfS3W0fvlzYnIFL4SEwS40722422932%3Apl%3Ata%3Ap1%3Ap2%3Aac695932%3Aap1t1%3Aneg;sid=7eeab07f6d440fa9212dfa5463b905da;dcid=1;checkin=2014-07-05;checkout=2014-07-06;ucfs=1;group_adults=4;group_children=0;group_rooms=74163302_83280647_4_0_4_0_0;srfid=ee8bb5d010235950db06aee568e46fc17e216de5X3#rt-lightbox-open
+
+~~https://www.airbnb.jp/s/%E6%9C%AD%E5%B9%8C%E9%A7%85?checkin=2014%2F07%2F05&checkout=2014%2F07%2F06&guests=4~~
 
 * 7.6 札幌——旭 宿旭川
 
@@ -36,7 +38,9 @@ http://www.booking.com/hotel/jp/daiwa-ryokan-annex.ja.html?aid=309654;label=Hote
 
 * 7.11 昭和--函馆 函馆
 
-http://www.jalan.net/uw/uwp3200/uww3201init.do?stayCount=1&roomCount=2&stayDay=11&stayYear=2014&stayMonth=7&adultNum=2&distCd=01&roomCrack=200000,200000&screenId=UWW1402&yadNo=331166&planCd=01225011&roomTypeCd=0132523&callbackHistFlg=1
+http://www.booking.com/hotel/jp/hakodateyama-guest-house.ja.html?aid=356995;label=gog235jc-hotel-ja-jp-pensionNyoungNhouse-unspec-jp-com-L%3Aja-O%3Aunk-B%3Aunk-N%3AXX-S%3Abo;sid=a25e8485e32eecba9977818fffdd21ae;dcid=1;checkin=2014-07-11;checkout=2014-07-12;ucfs=1;group_adults=4;group_children=0;group_rooms=54956508_83526678_4_0_4_0_0;srfid=329cbd1f01e31b5b09c4dc5c087c8722fd6bd4b3X1
+
+~~http://www.jalan.net/uw/uwp3200/uww3201init.do?stayCount=1&roomCount=2&stayDay=11&stayYear=2014&stayMonth=7&adultNum=2&distCd=01&roomCrack=200000,200000&screenId=UWW1402&yadNo=331166&planCd=01225011&roomTypeCd=0132523&callbackHistFlg=1~~
 
 * 7.12 函馆--新千岁 飞机：19:00
 
