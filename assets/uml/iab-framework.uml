@@ -1,0 +1,51 @@
+@startuml
+
+== Get Products ==
+Client -> Server: Get Products Request
+note left: 取得服务器里用户能够购买的商品设定
+Server --> Client: Avalibale Products in Server
+Client -> Google_Player: Get Products Requests
+note left: 取得GooglePlayer里面的商品设定
+Google_Player --> Client: Avalibale Products
+Client -> Client: Show Product List
+note left: 显示能够购买的商品
+
+== Purchase ==
+ref over Client,Server,Google_Player
+  恢复处理
+end ref
+Client -> Server: Get Server Transaction
+ref over Server
+  Server的事务发放
+end ref
+Server --> Client: Server Transaction ID
+Client -> Google_Player: Puchase Request(Product ID, payload)
+note right: 这里将Server Transaction ID作为payload
+Google_Player --> Client: Purchase Success Response
+note right: 这里已经获得了购买的收据
+Client -> Server: Close Server Transaction Request(IAB token)
+note left: 向服务器发送关闭事务的请求
+Server -> Server: Check Server Transaction Status
+note right: 确认该事务之前没有被处理
+note right
+  google player的receipt含在token中
+  将token交给google验证的话，会返回google的验证信息
+  如果通过的话，返回的jsonbody内会包含购买时传入的payload
+end note
+Server -> Google_Player: Check Receipt Status
+note left: 向googl服务器确认收据的合法性
+Google_Player --> Server: Valid Receipt
+Server -> Server: Check IAB Transaction
+note left
+  向App发送收据时，服务器返回购买当时的具体情况
+  同时check payload是否与transaction相符
+end note
+group transcation
+  Server -> Server: Give ItemSet/Lunch Gacha ItemSet
+  note right: 内容赋予/扭蛋抽奖等等
+  Server -> Server: Close Transaction
+end
+Server --> Client: Inventory Ids
+Client -> Google_Player: cosume(product_id)
+note right: 显式的消费
+@enduml
