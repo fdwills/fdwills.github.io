@@ -1,0 +1,21 @@
+---
+layout: post
+title:  "无聊小游戏"
+date:   2014-07-30 22:44:57
+categories: diary
+tags: draft
+---
+
+## 1. CleverBoy
+
+### 玩法
+
+* 屏幕下方的数学式，上方会飘落答案
+* 点击正确的答案会加分
+* 点击错误的答案会减分
+* 正确的答案落到地面后会减分
+* 分数变化后数学式也会变化
+
+### 下载
+
+[安装CleverBoy]({{ site.url }}/assets/apk/CleverBoy-release.apk)
