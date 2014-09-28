@@ -1,0 +1,294 @@
+# Ruby简介
+
+```
+print("Hello world")
+print "Hello world"
+```
+---
+
+## 数据类型
+
+* 所有都是Object的子类
+* 支持Number、String、Ranges、Symbols，以及true、false和nil, Array, Hash
+
+```ruby
+# Number, 包含
+fixnum = 50 # Fixnum < Integer < Numeric < Object
+bignumber = 111111111111111111111111 #Bignum < Integer < Numeric < Object
+
+# String
+s = "hello" # String < Object
+
+# Range
+range = (1..10) # [1, 10], Range < Object
+range2 = (1...10) # [1, 10), Range < Object
+
+# Symbols
+sym = :hello # Symbol < Object
+```
+--
+
+## Object的基本方法
+
+```ruby
+1.class
+# => Fixnum 查看类型
+
+1.class.superclass
+# => Integer 查看父类类型
+
+1.object_id
+# => 3 Object的id
+```
+--
+
+## Symbol
+
+* 表示字符串的名字，用法大致与字符串相同，底层实现与字符串不同
+* 使用Symbol比使用字符串效率更高
+* 两者之间，可以相互转换
+
+```ruby
+# 比较两者object_id
+"aa".object_id
+"aa".object_id
+
+:aa.object_id
+:aa.object_id
+
+# String => Symbol转换
+"aa".to_sym
+
+# Symbol => String转换
+:aa.to_s
+```
+
+--
+
+## Array, Hash
+
+```ruby
+array = [1,2,3]
+
+hash = {"key" =>  "value"}
+hash = {:key => "value" }
+hash = {key: "value"}
+```
+---
+
+## 函数
+
+```ruby
+def func_name(arg1, arg2, agr3)
+  puts "some thing"
+  return arg1, arg2
+end
+
+a1, a2 = func_name(1, 2, 3)
+```
+---
+
+## 代码块1
+
+* {} 或者 begin end包围的代码
+* 可以对任何函数传入代码块
+* 在函数中调用yield执行代码块
+
+```ruby
+def func_name(arg1, arg2)
+  puts "some thing"
+  yield
+end
+
+func_name(1, 2) { puts "this is block"}
+func_name(1, 2) do
+   puts "this is also block"
+end
+```
+--
+
+## 代码块2
+
+* 参数列表中显示表明
+* 函数中call方法调用
+
+```ruby
+def func_name(arg1, arg2, &block)
+  puts "some thing"
+  block.call
+end
+
+func_name(1, 2) { puts "this is block"}
+
+# 带参数的block
+def func_name(arg1, arg2, &block)
+  puts "some thing"
+  block.call(1)
+end
+
+func_name(1, 2) { |parm| puts "number is", param}
+```
+
+---
+
+## 流程控制
+
+```ruby
+# 条件分支
+if true then
+  puts "true"
+else
+  puts "false"
+end
+
+# 循环
+for i in 1..10 do
+  puts i
+end
+
+# 采用迭代器循环
+[1,2,3].each do |i|
+  puts i
+end
+```
+---
+
+## 模块Module
+
+* 类似于c++中的namespace概念, Object继承而来
+* 不能实例化
+
+```ruby
+module TestModule
+  def self.xxx
+    puts "define function xxx"
+  end
+
+  def yyy
+    puts "define function yyy"
+  end
+end
+
+TestModule::xxx
+TestModule::yyy # error
+```
+
+---
+
+## 类Class
+
+```ruby
+class TestClass
+  # attr_accessor, attr_reader, attr_write
+  attr_accessor :instance_variable1, :instance_variable1
+
+  # 类变量
+  @@class_variable = 0
+
+  # 类常量
+  CLASS_CONSTANT = 10
+
+  # 类方法
+  def self.class_method
+    puts "do something in class method"
+  end
+
+  # 构造函数
+  def initialize(v1, v2)
+    @instance_variable1, @instance_variable1 = v1, v2
+    @@class_variable = @@class_variable + 1
+  end
+
+  # 实例方法
+  def instance_method
+    puts "do something in instance method"
+  end
+end
+
+a = TestClass.new(1,2)
+a.instance_method
+TestClass::class_method
+puts TestClass::CLASS_CONSTANT
+```
+
+---
+
+## public，private，protected
+
+* Public 方法： Public 方法可被任意对象调用。默认情况下，方法都是 public 的，除了 initialize 方法总是 private 的。
+* Private 方法： Private 方法不能从类外部访问或查看。只有类方法可以访问私有成员。
+* Protected 方法： Protected 方法只能被类及其子类的对象调用。访问也只能在类及其子类内部进行。
+
+---
+
+## Class的继承与mixin
+
+* ruby的类只支持单继承，不支持多继承(<)
+* 采用mix-in一个module的方式实现多继承(include)
+
+--
+
+## 给array添加方法（1）：继承
+
+```ruby
+class MyArray < Array
+  def xxx
+    puts "xxx method"
+  end
+end
+MyArray.new([1,2,3]).xxx
+```
+
+--
+
+## 给array添加方法（2）：mix-in
+
+```ruby
+module XXXModule
+  def xxx
+    puts "xxx method"
+  end
+end
+
+class MyArray < Array
+  include XXXModule
+end
+MyArray.new([1,2,3]).xxx
+```
+--
+
+## 给array添加方法（3）：类加载机制
+
+* ruby加载类或者模块的定义时，会合并其中的定义
+* 合并的时候相同的方法会安加载顺序被覆盖
+
+```ruby
+class Array
+  def xxx
+    puts "xxx method"
+  end
+end
+
+[1,2,3].xxx
+```
+---
+
+## Ruby其他
+
+* 元编程
+* 多线程
+* 网络编程
+
+---
+
+## 为什么用Ruby
+
+* 因为Ruby on Rails
+* 因为代码少
+* 因为开发速度快
+* 因为开发出的代码安全
+
+---
+
+待续
+---

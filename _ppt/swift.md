@@ -1,4 +1,4 @@
-# Swift简介
+# Swift语言
 
 ```
 println("Hello, world")
