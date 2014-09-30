@@ -2,7 +2,7 @@
 layout: post
 title:  "安卓相关"
 date:   2014-07-30 22:44:57
-categories: diary
+categories: diar
 tags: draft
 ---
 
