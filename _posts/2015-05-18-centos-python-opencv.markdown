@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Opencv在centos的安装"
+title:  "Opencv，SVM相关库在centos的安装"
 date:   2015-05-10 12:44:57
 categories: diary
 tags: draft
@@ -8,7 +8,7 @@ tags: draft
 
 ## 前言
 
-最近做到一个人脸识别图像切割的项目，需要安装opencv的python处理库。
+最近做到一个人脸识别图像切割的项目，需要安装cv的python处理库，以及ml的相关库。这里采用的时opencv和svm库。
 
 * 环境，centos6.5（阿里云）
 
@@ -77,11 +77,19 @@ sudo make install
 
 ## 测试
 
-```
+```bash
 source ~/env
 python
 >>import cv2
 ```
+
+## 安装svm库
+
+```bash
+yum -y install gcc gcc-c++ numpy python-devel scipy
+pip2.7 install SciPy scikit-learn
+```
+
 
 ## Dockerfile
 
@@ -107,6 +115,9 @@ RUN cd /open_software && curl -# -o ez_setup.py https://bootstrap.pypa.io/ez_set
     && easy_install-2.7 pip
 
 RUN pip2.7 install numpy
+
+RUN yum -y install gcc gcc-c++ numpy python-devel scipy
+RUN pip2.7 install SciPy scikit-learn
 
 RUN cd /open_software && curl -# -o http://sourceforge.net/projects/opencvlibrary/files/opencv-unix/2.4.11/opencv-2.4.11.zip \
     && unzip opencv-2.4.11.zip \
