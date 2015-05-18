@@ -51,6 +51,8 @@ ln -s /usr/local/lib/libpython2.7.so ~/peiwo/env/lib/libpython2.7.so
 ## 安装opencv
 
 ```bash
+yum install -y blas-devel lapack-devel
+
 wget http://sourceforge.net/projects/opencvlibrary/files/opencv-unix/2.4.11/opencv-2.4.11.zip
 unzip opencv-2.4.11.zip
 
@@ -101,7 +103,8 @@ ENV PYTHON_PREFIX /usr/local
 
 RUN yum update && yum groupinstall -y "Development tools" \
     && yum install -y zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gdbm-devel db4-devel libpcap-devel \
-    && yum install -y gcc g++ gtk+-devel libjpeg-devel libtiff-devel jasper-devel libpng-devel cmake unzip
+    && yum install -y gcc g++ gtk+-devel libjpeg-devel libtiff-devel jasper-devel libpng-devel cmake unzip \
+    && yum install -y blas-devel lapack-devel
 
 RUN mkdir -p /open_software
 RUN cd /open_software && curl -# -o Python-2.7.8.tar.xz https://www.python.org/ftp/python/2.7.8/Python-2.7.8.tar.xz \
