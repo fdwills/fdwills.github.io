@@ -155,3 +155,4 @@ ENTRYPOINT ["/docker-entrypoint.sh"]
 * [python以及虚拟环境的安装](http://blogs.360.cn/blog/how-360-uses-python-1-virtualenv/)
 * [opencv的编译安装](https://gist.github.com/HuangFJ/5ee1cfe742f442e89917)
 * [svm的安装](http://scikit-learn.org/stable/install.html)
+* [svm的示例程序](http://qiita.com/sz_dr/items/f3d6630137b184156a67)
