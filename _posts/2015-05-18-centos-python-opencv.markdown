@@ -14,6 +14,8 @@ tags: draft
 
 ## 安装Python 2.7.8
 
+* 这里从源码编译安装python2.7.8
+
 ```bash
 yum groupinstall "Development tools"
 yum install zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gdbm-devel db4-devel libpcap-devel
@@ -50,6 +52,8 @@ ln -s /usr/local/lib/libpython2.7.so ~/peiwo/env/lib/libpython2.7.so
 
 ## 安装opencv
 
+* opencv的编译安装需要花费很多的时间，中间出现的error的请一个个解决
+
 ```bash
 yum install -y blas-devel lapack-devel
 
@@ -79,6 +83,8 @@ sudo make install
 
 ## 测试
 
+* 如果导入cv2没有问题的话，就ok了。
+
 ```bash
 source ~/env
 python
@@ -87,6 +93,8 @@ python
 
 ## 安装svm库
 
+* svm库的安装需要科学计算的库
+
 ```bash
 yum -y install gcc gcc-c++ numpy python-devel scipy
 pip2.7 install SciPy scikit-learn
@@ -94,6 +102,8 @@ pip2.7 install SciPy scikit-learn
 
 
 ## Dockerfile
+
+* Dockerfile，尚未经过测试和使用上的调优、待测过之后放到docker hub上
 
 ```
 # vim:set ft=dockerfile:
