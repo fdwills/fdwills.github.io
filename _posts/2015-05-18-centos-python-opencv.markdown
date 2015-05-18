@@ -147,4 +147,11 @@ COPY bin/requirements.txt /
 RUN pip2.7 install -r /requirements.txt
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
+
 ```
+
+## 参考文档
+
+* [python以及虚拟环境的安装](http://blogs.360.cn/blog/how-360-uses-python-1-virtualenv/)
+* [opencv的编译安装](https://gist.github.com/HuangFJ/5ee1cfe742f442e89917)
+* [svm的安装](http://scikit-learn.org/stable/install.html)
