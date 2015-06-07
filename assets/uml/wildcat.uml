@@ -1,0 +1,17 @@
+@startuml
+== 进入交互时序图 ==
+用户A -> 服务器: Join
+服务器-> 用户A: JoinResponse
+== 匹配的交互时序图 ==
+服务器->用户A: TrigerCall
+note left
+target B
+end note
+用户A -> 服务器: Call
+note left
+call_id, from, to, sdp, type(wildcat)
+end note
+== 退出交互时序图 ==
+用户A -> 服务器: leave
+服务器-> 用户A: LeaveResponse
+@enduml

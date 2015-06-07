@@ -1,0 +1,13 @@
+@startuml
+== 一般webrtc的流程 ==
+A -> A: setLocalDescription
+A -> A: createOffer
+A --> B: send offer
+B -> B: setLocalDescription
+B -> B: setRemoteDescription
+B -> B: createAnswer
+B --> A: sendAnswer
+A -> A: setRemoteDescription
+A --> B: iceCandidate
+B --> A: iceCandidate
+@enduml

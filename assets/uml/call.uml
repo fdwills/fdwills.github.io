@@ -1,0 +1,71 @@
+@startuml
+=== 普通通话 ===
+== 通话交互时序图 ==
+用户A -> 服务器: Call
+note left
+call_id, sdp, from, to
+end note
+服务器-> 用户A: Trying
+note left
+call_id
+end note
+服务器-> 用户B: Call
+note left
+call_id, sdp, from, to
+end note
+用户B->服务器: Ringing
+note left
+call_id, from, to
+end note
+服务器-> 用户A: Ringing
+note left
+call_id, sdp, from, to
+end note
+用户B -> 服务器: OK
+note left
+call_id, from, to
+end note
+服务器-> 用户A: OK
+note left
+call_id, from, to
+end note
+用户A -> 服务器: OKResponse
+note left
+call_id, from, to
+end note
+服务器-> 用户B: OKResponse
+== 结束通话时的交互时序图 ==
+用户A -> 服务器: Bye
+note left
+call_id, from, to
+end note
+服务器-> 用户B: Bye
+note left
+call_id, from, to
+end note
+用户B -> 服务器: ByeResponse
+note left
+call_id, from, to
+end note
+服务器-> 用户A: ByeResponse
+note left
+call_id, from, to
+end note
+
+=== 匿名聊===
+== 进入交互时序图 ==
+用户A -> 服务器: Join
+服务器-> 用户A: JoinResponse
+== 匹配的交互时序图 ==
+服务器->用户A: TrigerCall
+note left
+target B
+end note
+用户A -> 服务器: Call
+note left
+call_id, from, to, sdp, type(wildcat)
+end note
+== 退出交互时序图 ==
+用户A -> 服务器: leave
+服务器-> 用户A: LeaveResponse
+@enduml

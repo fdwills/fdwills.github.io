@@ -1,0 +1,45 @@
+@startuml
+== 通话建立序图 ==
+用户A -> 服务器: Call
+note left
+主叫方生成call id，并且附带自己的sdp作为offer
+end note
+服务器-> 用户A: Trying
+note left
+服务器回复主叫方正在尝试连接
+end note
+服务器-> 用户B: Call
+note left
+另外一边，服务器将A的offer信息原原本本的转发给B
+end note
+用户B->服务器: Ringing
+note left
+B收到offer之后，立刻告诉服务器正在响铃
+end note
+服务器-> 用户A: Ringing
+note left
+服务器告诉A，B已经收到offer
+end note
+用户B -> 服务器: OK
+note left
+在B收到offer，初始化webrtc之后，给A发answer
+end note
+服务器-> 用户A: OK
+note left
+服务器把B的anser转发给A
+end note
+用户A -> 服务器: ACK
+note left
+A收到answer之后告诉通过服务器告诉B我已经收到了可以开始通话。
+end note
+服务器-> 用户B: ACK
+== 结束通话时的交互时序图 ==
+用户A -> 服务器: Bye
+note left
+发出结束通话的信令
+end note
+服务器-> 用户B: Bye
+用户B -> 服务器: ACK
+服务器-> 用户A: ACK
+
+@enduml
