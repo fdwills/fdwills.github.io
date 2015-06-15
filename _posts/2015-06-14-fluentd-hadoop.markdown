@@ -123,6 +123,21 @@ Jun 11 18:31:35 localhost haproxy[27860]: 60.180.171.174:21572 [11/Jun/2015:18:3
 
 在hdfs上通过forward模式接受数据，此时数据已经有tag，这个tag是由tail的时候打上，并且由forward模式转发过来的。这是后tag被match hdfs.*.*的规则匹配到，于是交给了webhdfs存储到本地的hdf文件系统中。
 
+#### Troubleshooting
+
+一、 no nodes are available
+
+这是由于心跳以及传输的过程过程中，tcp和udp的都要允许。在官网上也有解释：
+
+```
+Please make sure that you can communicate with port 24224 using not only TCP, but also UDP. These commands will be useful for checking the network configuration.
+
+$ telnet host 24224
+$ nmap -p 24224 -sU host
+```
+
+很多人都是在内网搭建这样的网络，所以是对于内网，记得打开tcp和udp协议的访问许可。
+
 ### 其他
 
 在fluentd中，用于接受和发送数据的都是一些插件，http，forward，webhdfs，apache都是fluentd内置的插件。另外还有个人开发的类似处理nginx的插件等等，都可以拿来用。在应用程序中，fluentd提供了各种语言的库文件，用于向fluentd发送log，这些大多数都是基于http模块的。于是，下一步就是，如何处理这些log了。
