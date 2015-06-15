@@ -123,6 +123,24 @@ Jun 11 18:31:35 localhost haproxy[27860]: 60.180.171.174:21572 [11/Jun/2015:18:3
 
 在hdfs上通过forward模式接受数据，此时数据已经有tag，这个tag是由tail的时候打上，并且由forward模式转发过来的。这是后tag被match hdfs.*.*的规则匹配到，于是交给了webhdfs存储到本地的hdf文件系统中。
 
+### 查看结果
+
+在hdf上使用hdfs tail命令，就能看到在/user/hdfsuser/haproxy/%Y%m%d_%H/accesslog.log.${hostname}路径，存储的格式：
+
+```
+{"ha_month":"Jun","ha_day":"15","ha_time":"13:31:06","host":"localhost","ps":"haproxy","pid":"27861","c_ip":"112.17.235.81","c_port":"7917","f_end":"https_frontend~","b_server":"web_server/httpserver","tq":"3577/0/1/9/3587","status_code":"200","bytes":"263","req_cookie":"-","res_cookie":"-","t_state":"--NI","conn":"5/3/0/0/0","srv_queue":"0","backend_queue":"0","method":"GET","request":"/index.html","req_version":"HTTP/1.1"}
+```
+
+使用一个简单的pig脚本就能够读取和处理其中的数据：
+
+```
+first_table = load '/user/deploy/haproxy/20150615_13/accesslog.log.peiwo-hub4'
+    using JsonLoader('ha_month:chararray,ha_day:chararray,ha_time:chararray,host:chararray,ps:chararray,pid:chararray,c_ip:chararray,c_port:chararray,f_end:chararray,b_server:chararray,tq:chararray,status_code:chararray,bytes:chararray,req_cookie:chararray,res_cookie:chararray,t_state:chararray,conn:chararray,srv_queue:chararray,backend_queue:chararray,method:chararray,request:chararray,req_version:chararray');
+STORE first_table
+    INTO 'first_table.json'
+    USING JsonStorage();
+```
+
 #### Troubleshooting
 
 一、 no nodes are available
