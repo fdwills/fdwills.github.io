@@ -1,0 +1,54 @@
+---
+layout: post
+title:  "Logstash, elastic和kibana"
+date:   2015-06-14 12:44:57
+categories: diary
+tags: draft
+---
+
+## 前言
+
+在flunted+hadoop+pig的搜集和分析的系统流程完了之后。在图表的表示方面有点弱，于是又试了一下logstash+elastic+kibana的组合方式试试效果。
+
+### flunted vs logstash
+
+在flunted的概念中，存在source和match的概念，source是log流的来源，match部分处理log，并且做过滤和输出。
+
+在logstash的概念中，将过滤的概念单独拿出来作为filter节，其他节input与source对应，output与match中输出的部分相对应。
+
+一个典型的logstash配置文件如下：
+
+```
+input {
+  file {
+    path => "/data0/nginx-acess.log"
+  }
+}
+
+filter {
+  if !([message] =~ "HADOOP") {
+    drop {}
+  }
+
+  json {
+      source => "message"
+  }
+
+  date {
+    match => [ "timestamp" , "dd/MMM/yyyy:HH:mm:ss Z" ]
+  }
+}
+
+output {
+  elasticsearch {
+    host => localhost
+  }
+}
+```
+
+logstash用ruby实现的，在配置文件里面，可以写简单的ruby脚本，比如根据正则匹配来做对log做不同处理等等
+
+[待续]
+
+## 参考文档
+

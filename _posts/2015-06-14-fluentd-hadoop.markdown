@@ -64,6 +64,7 @@ fluentd除了forward，http之外，还有tail同道可以用来处理本地log�
 ### 配置实战
 
 目的：
+
 ```
 这里的应用是将haproxy输出的http的log文件，以格式化好饿格式存储到hdfs当中去。
 ```
@@ -71,6 +72,7 @@ fluentd除了forward，http之外，还有tail同道可以用来处理本地log�
 hdfs与haproxy分别部署在不同的物理机器上，当中由内网沟通。将fluentd设计成一个cs的结构，在haproxy机器上做client用于搜集和发送，在hdfs上做server用于接受和存储。
 
 一个典型的haproxy的log如下：
+
 ```
 Jun 11 18:31:35 localhost haproxy[27860]: 60.180.171.174:21572 [11/Jun/2015:18:31:35.408] https_frontend~ web_server/http_backend 34/0/1/114/149 200 3497 - - --VN 11/6/0/0/0 0/0 "GET /index.html HTTP/1.1"
 ```
