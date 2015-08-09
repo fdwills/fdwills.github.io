@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Logstash, elastic和kibana"
-date:   2015-06-14 12:44:57
+date:   2015-06-30 12:44:57
 categories: diary
 tags: draft
 ---
@@ -22,11 +22,16 @@ tags: draft
 input {
   file {
     path => "/data0/nginx-acess.log"
+    add_field =>  { "type" => "access" }
+  }
+  file {
+    path => "/data0/nginx-error.log"
+    add_field =>  { "type" => "error" }
   }
 }
 
 filter {
-  if !([message] =~ "HADOOP") {
+  if !([message] =~ "error") {
     drop {}
   }
 
@@ -46,9 +51,22 @@ output {
 }
 ```
 
-logstash用ruby实现的，在配置文件里面，可以写简单的ruby脚本，比如根据正则匹配来做对log做不同处理等等
+logstash用ruby实现的，在配置文件里面，可以写简单的ruby脚本，比如根据正则匹配来做对log做不同处理等等。
 
-[待续]
+logstash的input plugin支持很多种的输入，file是其中的一种，通过追踪文件的变化，将文件逐行作为input获取出来。同时在input节里面，可以通过一些logstash的命令增加或者修改字段。如例子中的add_field的例子。例子中type是logstash的默认的一个属性，如果没有系统会加上一个默认的type属性。
+
+在filter节里面，会对input的每条记录逐行过滤和处理，其中需要用到一些grok，json等操作，也可以通过简单的ruby程序，将这些操作组成逻辑。
+
+output节里面，logstash会多每个输出做定向输出到各种容器里面，如hdfs，stdout和文件等等。
+
+### elasticsearch
+
+logstash内的输出可以存储到elasticsearch里面，而elasticsearch提供的restapi可以对index进行增删改查等等操作。
+
+### kibana
+
+kibana是一个非常强大的图形化工具。可以从elasticsearch提取出数据绘图。
 
 ## 参考文档
 
+* [Logstash Input](https://www.elastic.co/guide/en/logstash/current/input-plugins.html)
