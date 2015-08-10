@@ -124,3 +124,6 @@ keyPassword=passwd
 
 * [New Build System](http://tools.android.com/tech-docs/new-build-system)
 * [Proguard Sample](http://proguard.sourceforge.net/manual/examples.html)
+
+[New Build System]: http://tools.android.com/tech-docs/new-build-system
+[Proguard Sample]: (http://proguard.sourceforge.net/manual/examples.html
