@@ -63,6 +63,19 @@ output节里面，logstash会多每个输出做定向输出到各种容器里面
 
 logstash内的输出可以存储到elasticsearch里面，而elasticsearch提供的restapi可以对index进行增删改查等等操作。
 
+elasticsearch中，每个文档属于一种类型，类型存在与数据库中，而elasticsearch中的数据库叫做index。
+
+一般的elasticsearch的RESTApi中一般会包含/index/type的部分。例如:
+
+```
+GET /megacorp/employee/1
+```
+
+则表示megacorp的index中类型为employee的记录中id为1的记录。
+
+
+elasticsearch底层的存储是一个基于分片和主从的存储架构，分片是es的最小的存储单元，一个index其实是对于一组分片集合的逻辑。分片和分片的主从复制会被均匀的散布在各个节点上，每个节点都知道全局的数据分布情况，即那个分片的主或者从分布在哪里，于是从每个节点开始，都能访问整个集群。这保证了es在大规模分布式数据的高可用性。
+
 ### kibana
 
 kibana是一个非常强大的图形化工具。可以从elasticsearch提取出数据绘图。
