@@ -842,7 +842,40 @@ Hello Finagle!
 2. 使用Play framework等实际的发布方法
 3. 不停止的deploy(rolling deploy)
 
+## 编外
 
+### Capistrano的标准流程
+
+Capistrano有一套自己的标准的[发布流程](capistrano-flow)，在这套发布流程里面，发布的是按照下面的步骤做的：
+
+```
+deploy:starting    - start a deployment, make sure everything is ready
+deploy:started     - started hook (for custom tasks)
+deploy:updating    - update server(s) with a new release
+deploy:updated     - updated hook
+deploy:publishing  - publish the new release
+deploy:published   - published hook
+deploy:finishing   - finish the deployment, clean up everything
+deploy:finished    - finished hook
+```
+
+在hook的部分，你可以定义自己的部分，同样，在回滚的时候也有自己的一套流程，
+
+```
+deploy:starting
+deploy:started
+deploy:reverting           - revert server(s) to previous release
+deploy:reverted            - reverted hook
+deploy:publishing
+deploy:published
+deploy:finishing_rollback  - finish the rollback, clean up everything
+deploy:finished
+```
+
+同样可以在hook里面写上自己的发布脚本来完成自定义的发布。
+
+在实际过程中，Capistrano经常与jenkins等CI系统协同工作，来完成自动或者半自动的发布工作。
 
 [method-list]: https://github.com/capistrano/sshkit/blob/v1.2.0/lib/sshkit/backends/abstract.rb#L21
 [capistrano-link]: http://labs.gree.jp/blog/2013/12/10084/
+[capistrano-flow]: http://capistranorb.com/documentation/getting-started/flow/
