@@ -128,6 +128,12 @@ a=ssrc:1942841082 label:ARDAMSa0
 
 media体中告诉了对方我可以使用的通信，编码压缩模式。具体不详述了从中可以看到音频处理的一些关键字：[opus](https://mf4.xiph.org/jenkins/view/opus/job/opus/ws/doc/html/group__opus__decoder.html)，G722等等。具体选择哪种传输模式，就有webrtc自己去选择了。
 
+在sdp中a=rtpmap:111 opus\/48000\/2表示可以支持的编码格式/采样率/通道数。
+
+最常用编码格式为opus，在现阶段的webrtc中，不支持opus的采样率的配置。[这里](https://groups.google.com/forum/#!searchin/discuss-webrtc/opus/discuss-webrtc/POTBvHO1cYU/ztn7ntIbMvsJ)。想要改变语音传输的带宽等等信息，需要添加opus的约束，例如maxplaybackrate等，[参考文档](https://tools.ietf.org/html/draft-ietf-payload-rtp-opus-11#section-7.1)
+
+
+
 ## WebRTC的信令
 
 到这里，为什么webrtc需要信令就很自然了：在没有建立通信的情况下，怎么将sdp等信息传送给对方，并建立起一个正常的童话。当中涉及到两个内容：1，如何完成webrtc信息的传递；2，如何完成一个合理的通话流程。
