@@ -62,6 +62,33 @@ public class MainActivity extends Activity {
 
 然而Dagger2的缺点就是，学习成本太高，理解太困难了。。。。
 
+下面的例子是一个在软件内全局实例的例子，
+
+```java
+OkHttpClient client = new OkHttpClient();
+
+// Enable caching for OkHttp
+int cacheSize = 10 * 1024 * 1024; // 10 MiB
+Cache cache = new Cache(getApplication().getCacheDir(), cacheSize);
+client.setCache(cache);
+
+// Used for caching authentication tokens
+SharedPreferences sharedPrefeences = PreferenceManager.getDefaultSharedPreferences(this);
+
+// Instantiate Gson
+Gson gson = new GsonBuilder().create();
+GsonConverterFactory converterFactory = GsonConverterFactory.create(Gson);
+
+// Build Retrofit
+Retrofit retrofit = new Retrofit.Builder()
+                                .baseUrl("https://api.github.com")
+                                .addConverterFactory(converterFactory)
+                                .client(client)  // custom client
+                                .build();
+```
+
+这些例子在使用的时候，都可以通过注入来简化代码和逻辑。
+
 ### Dagger2
 
 Dagger2有以下一些特征：
@@ -96,7 +123,6 @@ Dagger2有以下一些特征：
  buildscript {
      repositories {
          jcenter()
-+        mavenCentral()
      }
      dependencies {
          classpath 'com.android.tools.build:gradle:1.3.0'
@@ -109,7 +135,7 @@ Dagger2有以下一些特征：
 
 ```java
  apply plugin: 'com.android.application'
-+apply plugin: 'android-apt'
++apply plugin: 'com.neenbedankt.android-apt'
 
  android {
      compileSdkVersion 23
@@ -140,7 +166,7 @@ Dagger2有以下一些特征：
 
 +    compile 'com.google.dagger:dagger:2.0.2'
 +    apt 'com.google.dagger:dagger-compiler:2.0.2'
-+    provided 'javax.annotation:jsr250-api:1.0'
++    provided 'org.glassfish:javax.annotation:10.0-b28'
  }
 ```
 
