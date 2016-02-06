@@ -295,8 +295,6 @@ public class AppApplication extends Application {
 
 ## 参考文档
 
-* [New Build System](http://tools.android.com/tech-docs/new-build-system)
-* [Proguard Sample](http://proguard.sourceforge.net/manual/examples.html)
+* [http://qiita.com/ko2ic/items/6e140c8e1a3568ced2ee](http://qiita.com/ko2ic/items/6e140c8e1a3568ced2ee)
+* [http://satoshun.github.io/2015/05/dagger2/](http://satoshun.github.io/2015/05/dagger2/)
 
-[New Build System]: http://tools.android.com/tech-docs/new-build-system
-[Proguard Sample]: (http://proguard.sourceforge.net/manual/examples.html
