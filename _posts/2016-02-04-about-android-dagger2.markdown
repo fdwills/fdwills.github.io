@@ -33,6 +33,35 @@ rather than allowing a client to build or find the service, is the fundamental r
 
 [Android: Dagger2でDIをする. 基本編 Part1](http://satoshun.github.io/2015/05/dagger2/)
 
+依赖性注入有什么好处呢？这边文章里面给出了解释([链接](https://github.com/codepath/android_guides/wiki/Dependency-Injection-with-Dagger-2))
+
+* 简单的对共享实例的访问。
+
+就像butteknife库能够简单的对view，handler和资源进行访问一样，Dagger2提供了获取共享实例引用的方法。例如，一旦我们定义了一个比如MyTwitterApiClient或者对SharedPrefence，可能还有dbAccessor，我们能够通过简单定义一个@Inject注解
+
+```java
+public class MainActivity extends Activity {
+   @Inject MyTwitterApiClient mTwitterApiClient;
+   @Inject SharedPreferences sharedPreferences;
+
+   public void onCreate(Bundle savedInstance) {
+       // assign singleton instances to fields
+       InjectorClass.inject(this);
+   }
+```
+
+* 简单的配置复杂的依赖关系。
+
+你的对象的创建是有一个隐式的顺序的，Dagger2通过遍历依赖关系图生成能够方便的理解和追踪的代码，这样大大简化了你手动的编写代码来获取引用以及将他传递给依赖他的对象。同样也方便你对模块的重构，因为你能够专注于模块内的逻辑，不需要去想模块应该按照怎么样的顺序创建出来。
+
+* 便于测试
+
+* 实例范围
+
+依赖注入不仅能够管理整个应用生命周期的实例，同时也能定义一个在较短的生命周期中存在的实例，利于用户的session和activity的生命周期等。
+
+然而Dagger2的缺点就是，学习成本太高，理解太困难了。。。。
+
 ### Dagger2
 
 Dagger2有以下一些特征：
