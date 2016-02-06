@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "安卓dagger2"
-date:   2015-08-10 12:44:57
+date:   2016-02-04 12:44:57
 categories: diary
 tags: draft
 ---
